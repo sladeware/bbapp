@@ -1,6 +1,6 @@
 <!--- -*- mode: markdown; -*- -->
 
-This *helloworld* demo prints `Hello, World!` and demonstraits how to use B3
+This **helloworld** demo prints `Hello, World!` and demonstrates how to use B3
 build system:
 
     $ b3 build :helloworld
