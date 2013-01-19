@@ -2,6 +2,8 @@
 #
 # http://bionicbunny.org/
 # Copyright (c) 2012 Sladeware LLC
+#
+# Author: Oleksandr Sviridenko
 
 """
   from bb.utils import executable
@@ -25,9 +27,6 @@
 
   >>> foo -g
 """
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
 
 import inspect
 import types
@@ -70,10 +69,10 @@ ExecutableParameters = ExecutableParams
 
 class ParamsReaderInterface(object):
 
-  PARAM_HANDLERS = {}
+  param_handlers = {}
 
   def __init__(self):
-    self.__param_handlers = self.PARAM_HANDLERS
+    self.__param_handlers = self.param_handlers
     self.__processing_param = None
 
   def get_processing_params(self):

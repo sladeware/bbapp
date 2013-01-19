@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+# Copyright (c) 2012-2013 Sladeware LLC
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,29 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Author: Oleksandr Sviridenko
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
-
-import bb
 from bb.testing import unittest
-
-from bb.os.messenger import Message, Messenger, Argument
+from .messenger import Message, Messenger
 
 class MessageTest(unittest.TestCase):
-  def setup(self):
-    self._message = Message('SERIAL_OPEN', ('rx', 'tx'))
 
   def test_id(self):
-    self.assert_equal(self._message.id, 'SERIAL_OPEN')
+    msg = Message("SERIAL_OPEN", ("rx", "tx"))
+    self.assert_equal("SERIAL_OPEN", msg.label)
 
-  def test_arguments(self):
-    self.assert_equal(len(self._message.arguments), 2)
-    for arg in self._message.arguments:
-      self.assert_true(isinstance(arg, Argument))
-      self.assert_is_none(arg.type)
-    self.assert_equal(self._message.arguments[0], 'rx')
-    self.assert_equal(self._message.arguments[1], 'tx')
+  def test_io_fields(self):
+    msg = Message("SERIAL_OPEN", ("rx", "tx"))
+    self.assert_equal(2, len(msg.fields))
+    for field in msg.input_fields:
+      self.assert_true(isinstance(field, Message.Field))
+    for i, name, size in ((0, "rx", 0), (1, "tx", 0)):
+      self.assert_equal(name, msg.input_fields[i].name)
+      self.assert_equal(size, msg.input_fields[i].size)
 
 class MessagingTest(unittest.TestCase):
   pass

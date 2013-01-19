@@ -35,21 +35,14 @@ class Thread(object):
     self._runner = None
     self._messages = {}
     self._port = None
-    name = name or getattr(self.__class__, "name", None)
-    if name:
-      self.set_name(name)
-    if runner:
-      self.set_runner(runner)
-    elif hasattr(self, "runner"):
-      self._runner = self.RUNNER
-    else:
-      raise Exception("Runner wasn't provided")
-    if not getattr(self, 'PORT', None) is None:
-      self.set_port(self.PORT)
-    if port:
-      self.set_port(port)
-    if hasattr(self, 'name_format'):
-      self._name_format = getattr(self, 'name_format')
+    if name or getattr(self.__class__, "name", None):
+      self.set_name(name or self.__class__.name)
+    if runner or getattr(self.__class__, "runner", None):
+      self.set_runner(runner or self.__class__.runner)
+    if port or getattr(self.__class__, "port", None):
+      self.set_port(port or self.__class__.port)
+    if hasattr(self.__class__, "name_format"):
+      self._name_format = getattr(self.__class__, "name_format")
 
   def register_message(self, message):
     if not isinstance(message, Message):
@@ -80,15 +73,11 @@ class Thread(object):
 
   def set_runner(self, runner):
     if not typecheck.is_string(runner):
-      raise TypeError('Must be string')
+      raise TypeError("Runner must be string: %s" % runner)
     self._runner = runner
 
   def get_runner(self):
     return self._runner
-
-  @property
-  def runner(self):
-    return self.get_runner()
 
   def set_name(self, name):
     if not name:
@@ -100,16 +89,13 @@ class Thread(object):
   def get_name(self):
     return self._name
 
-  @property
-  def name(self):
-    return self.get_name()
-
   def has_port(self):
     return not self.get_port() is None
 
   def set_port(self, port):
     if not port or not isinstance(port, Port):
-      raise TypeError("port must be derived from bb.os.port.Port")
+      raise TypeError("Port must be derived from bb.app.meta_os.port.Port: %s" %
+                      port)
     if self.has_port():
       self.remove_port()
     self._port = port

@@ -64,6 +64,8 @@ class Message(object):
 
     @size.setter
     def size(self, size):
+      if not typecheck.is_int(size):
+        raise TypeError("size must be int: %s" % size)
       self._size = size
 
   def __init__(self, label, input_fields=[], output_fields=[]):
@@ -100,20 +102,24 @@ class Message(object):
     return self._input_fields
 
   @input_fields.setter
-  def input_fields(self, input_fields):
+  def input_fields(self, fields):
     self._input_fields = []
-    if not typecheck.is_sequence(input_fields):
-      raise TypeError('`input_fields` has to be a sequence')
-    for field in input_fields:
-      if typecheck.is_sequence(field):
+    if not typecheck.is_list(fields) and not typecheck.is_tuple(fields):
+      raise TypeError("`input_fields` has to be list or tuple: %s" % fields)
+    for field in fields:
+      if typecheck.is_list(field) or typecheck.is_tuple(field):
         field = self.Field(field[0], field[1])
-      elif not isinstance(field, Field):
+      elif not isinstance(field, self.Field):
         field = self.Field(field)
       self._input_fields.append(field)
 
   @property
   def output_fields(self):
     return self._output_fields
+
+  @property
+  def fields(self):
+    return tuple(self.input_fields + self.output_fields)
 
   @output_fields.setter
   def output_fields(self, output_fields):

@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-__author__ = 'Oleksandr Sviridenko'
+#
+# Author: Oleksandr Sviridenko
 
 from bb.testing import unittest
-from bb.hardware import primitives
+from bb.app.hardware import primitives
 
 class PrimitivesTest(unittest.TestCase):
 

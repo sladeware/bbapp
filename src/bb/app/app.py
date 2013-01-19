@@ -33,7 +33,9 @@ from bb.utils import pyimport
 from bb.utils import typecheck
 from bb.utils import path_utils
 
-_applications = {}
+_app_register = {}
+
+SETTINGS_DIR = ".bbapp"
 
 class Application(object):
   """Base class for those who needs to maintain global application state.
@@ -42,7 +44,6 @@ class Application(object):
   """
 
   build_dir = "build"
-  settings_dir = ".bbapp"
 
   def __init__(self, home_dir=None):
     """If `home_dir` was specified and it's not existed home directory, the new
@@ -51,40 +52,34 @@ class Application(object):
     self._network = Network()
     self._home_dir = None
     self._build_dir = None
-    if not home_dir:
-      mod = inspect.getmodule(inspect.getouterframes(inspect.currentframe())[1][0])
-      caller_dir = path_utils.dirname(inspect.getfile(mod)) or "."
-      home_dir = Application.find_home_dir(caller_dir)
-      if not home_dir:
-        self._init_home_dir(caller_dir)
-    else:
+    if home_dir:
       if not self.is_home_dir(home_dir):
-        self._init_home_dir(home_dir)
-    self._set_home_dir(home_dir)
-    default_build_dir = path_utils.join(self._home_dir, self.__class__.build_dir)
-    self.set_build_dir(default_build_dir, make=True)
+        self.init_home_dir(home_dir)
+      self.set_home_dir(home_dir)
+      #default_build_dir = path_utils.join(self._home_dir, self.__class__.build_dir)
+      #self.set_build_dir(default_build_dir, make=True)
 
   def __str__(self):
     return "%s[num_mappings=%d]" % (self.__class__.__name__,
                                     self.get_num_mappings())
 
-  def _init_home_dir(self, home_dir):
-    # NOTE, it will also use set_home_dir() method once the directory was
-    # initialized.
+  @classmethod
+  def init_home_dir(cls, home_dir):
     if not path_utils.exists(home_dir):
       raise IOError("'%s' doesn't exist" % home_dir)
-    settings_dir = path_utils.join(home_dir, self.__class__.settings_dir)
+    settings_dir = path_utils.join(home_dir, SETTINGS_DIR)
     path_utils.mkpath(settings_dir)
-    self._set_home_dir(home_dir)
     return home_dir
 
-  def _set_home_dir(self, home_dir):
+  def set_home_dir(self, home_dir):
     if not path_utils.exists(home_dir):
       raise Exception("`%s' doesn't exist" % home_dir)
     if self._home_dir:
-      del _applications[self]
+      del _app_register[self._home_dir]
+    if home_dir in _app_register:
+      raise Exception()
+    _app_register[home_dir] = self
     self._home_dir = home_dir
-    _applications.setdefault(home_dir, self)
 
   def set_build_dir(self, path, make=False):
     """Sets path to the build directory. The build directory will be used to
@@ -106,7 +101,7 @@ class Application(object):
       raise TypeError("'path' has to be a string")
     elif not path_utils.exists(path):
       raise IOError("'%s' path doesn't exist" % path)
-    return cls.settings_dir in os.listdir(path)
+    return SETTINGS_DIR in os.listdir(path)
 
   def get_home_dir(self):
     """Returns home directory"""

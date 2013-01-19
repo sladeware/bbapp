@@ -11,18 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Author: Oleksandr Sviridenko
 
-import bb
-import bb.os as bbos
+from bb.app import meta_os
 from bb.testing import unittest
 
 class PortTest(unittest.TestCase):
-  def setup(self):
-    pass
 
   def test_capacity(self):
-    p0 = bbos.Port(1)
+    p0 = meta_os.Port(1)
     self.assert_equal(p0.get_capacity(), 1)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   unittest.main()

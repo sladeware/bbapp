@@ -48,8 +48,9 @@ def find_app_dir(path):
   if path_utils.isfile(path):
     (path, _) = path_utils.split(path)
   while path is not os.sep:
-    if _app_class.is_home_dir(path):
-      return path
+    if os.path.exists(path) and os.path.isdir(path):
+      if _app_class.is_home_dir(path):
+        return path
     (path, _) = path_utils.split(path)
   return None
 
@@ -69,8 +70,6 @@ def identify_app(obj=None):
   """
   src = obj and inspect.getsourcefile(obj) or None
   home_dir = src and find_app_dir(src) or get_app_dir()
-  if not home_dir:
-    return None
   return _apps.setdefault(home_dir, _app_class(home_dir=home_dir))
 
 def identify_app_or_die(*args, **kwargs):
@@ -88,6 +87,7 @@ def init():
     raise Exception()
   _base_app_class = sys.modules["bb.app.app"].Application
   set_app_class(_base_app_class)
+  _apps[None] = _app_class()
 
 get_app = get_active_app = identify_app
 get_app_or_die = get_active_app_or_die = identify_app_or_die

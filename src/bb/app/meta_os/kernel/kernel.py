@@ -31,7 +31,6 @@ class Kernel(object):
   """The heart of BB operating system."""
 
   def __init__(self, core=None, threads=[], scheduler=StaticScheduler()):
-    Object.__init__(self)
     self._core = None
     self._ports = dict()
     self._threads = dict()

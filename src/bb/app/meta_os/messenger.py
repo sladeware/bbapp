@@ -36,9 +36,9 @@ handler for the actual processing.
 
 import logging
 
+from bb.utils import typecheck
 from thread import Thread
 from message import Message
-from bb.utils import typecheck
 
 class Messenger(Thread):
   """This class is a special form of thread, which allows to automatically
@@ -52,9 +52,9 @@ class Messenger(Thread):
     name of handler, e.g. ``serial_open_handler``.
   """
 
-  MESSAGE_HANDLERS = {}
-  IDLE_ACTION = None
-  DEFAULT_ACTION = None
+  message_handlers = {}
+  idle_action = None
+  default_action = None
 
   def __init__(self, name=None, runner=None, message_handlers={},
                idle_action=None, default_action=None, port=None):
@@ -62,19 +62,13 @@ class Messenger(Thread):
     self._default_action = None
     self._idle_action = None
     self._message_handlers = {}
-    if not default_action:
-      default_action = getattr(self, 'DEFAULT_ACTION', None)
-    if default_action:
-      self.set_default_action(default_action)
-    if not idle_action:
-      idle_action = getattr(self, 'IDLE_ACTION', None)
-    if idle_action:
-      self.get_idle_action(idle_action)
-    if hasattr(self, 'MESSAGE_HANDLERS'):
-      for message, handler in self.MESSAGE_HANDLERS.items():
-        self.add_message_handler(message, handler)
-    if message_handlers:
-      self.add_message_handlers(message_handlers)
+    if default_action or hasattr(self.__class__, "default_action"):
+      self.set_default_action(default_action or self.__class__.default_action)
+    if idle_action or hasattr(self, "idle_action"):
+      self.get_idle_action(idle_action or self.__class__.idle_action)
+    if mssage_handlers or hasattr(self.__class__, "message_handlers"):
+      self.add_message_handlers(message_handlers \
+                                  or self.__class__.message_handlers)
 
   def get_default_action(self):
     return self._default_action

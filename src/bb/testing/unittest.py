@@ -22,6 +22,11 @@ import unittest
 class TestCase(unittest.TestCase):
   """This class represents the smallest testable units."""
 
+  def __init__(self, *args, **kwargs):
+    unittest.TestCase.__init__(self, *args, **kwargs)
+    if hasattr(self, "setup"):
+      self.setUp = self.setup
+
   assert_equal = unittest.TestCase.assertEqual
   assert_not_equal = unittest.TestCase.assertNotEqual
   assert_is_not = unittest.TestCase.assertIsNot
@@ -30,11 +35,5 @@ class TestCase(unittest.TestCase):
   assert_true = unittest.TestCase.assertTrue
   assert_false = unittest.TestCase.assertFalse
   assert_raises = unittest.TestCase.assertRaises
-
-  def setup(self):
-    pass
-
-  def setUp(self):
-    return self.setup()
 
 main = unittest.main
