@@ -6,19 +6,20 @@ Copyright (c) 2013 Sladeware LLC
 
 http://www.bionicbunny.org/
 
-BBAPP
-=====
+What is Bionic Bunny Application?
+---------------------------------
 
-BBAPP (BB Application) is a high-level Python framework that encourages
-developement of BB based applications.
+Bionic Bunny Application or **BBAPP** is a high-level Python framework that
+encourages developement of BB based applications. The main goal of BBAPP is to
+generate [BBOS](http://github.org/sladeware/bbos/).
 
 All documentation is in the _docs_ directory.
 
 Installation
 ------------
 
-1. To install bbapp, make sure you have Python 2.6 or greater installed. If
-   you're in doubt, run:
+1. To install bbapp, make sure you have [Python](http://www.python.org) 2.6 or
+   greater installed. If you're in doubt, run:
 
         $ python -V
 
