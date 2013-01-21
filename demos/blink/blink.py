@@ -1,12 +1,13 @@
 #!/usr/bin/env python
+#
+# Copyright (c) 2013 Sladeware LLC
 
-from bb.app import Application, Mapping, Thread
-from bb.app.hardware.devices.processors import PropellerP8X32A_Q44
-from bb.app.hardware.devices.boards import Protoboard
+import bb.app
+from bb.app.hardware.devices.boards import P8X32A_QuickStartBoard
 from bb.app.hardware.devices.leds import LED
 
-processor = PropellerP8X32A_Q44()
-led = LED()
-board = Protoboard([processor, led])
-blinker = Thread("BLINKER", "blinker_runner")
-sensor = Mapping(processor=processor, threads=[blinker])
+board = P8X32A_QuickStartBoard()
+processor = board.get_processor()
+blinker = bb.app.Thread("BLINKER", "blinker_runner")
+buttons = bb.app.Thread("BUTTONS", "buttons_runner")
+sensor = bb.app.Mapping(processor=processor, threads=[blinker, buttons])

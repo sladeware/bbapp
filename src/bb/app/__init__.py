@@ -1,5 +1,5 @@
 # http://www.bionicbunny.org/
-# Copyright (c) 2012 Sladeware LLC
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,5 +25,5 @@ same time the processes inside of an application can be segmented into
 `clusters`, or a group of CPUs.
 """
 
-from app import Application
+from app import *
 from mapping import Mapping, Thread, Port, mapping_class_factory

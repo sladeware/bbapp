@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+# Copyright (c) 2012-2013 Sladeware LLC
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,9 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+#
+# Author: Oleksandr Sviridenko
 
 import networkx
 
@@ -150,7 +151,8 @@ class Network(networkx.MultiDiGraph):
     By default label equals to the key value but can be changes by using
     associated data as follows::
 
-      edge = network.add_edge(Mapping("M1"), Mapping("M2"), label="My serial connection")
+      edge = network.add_edge(Mapping("M1"), Mapping("M2"),
+                              label="My serial connection")
 
     or::
 
@@ -232,9 +234,11 @@ class NetworkXEdge(Network.Edge, tuple):
   def __init__(self, *args):
     (sender, receiver) = args[:2]
     self._key = None
-    if len(args) > 2: self.__key = args[2]
+    if len(args) > 2:
+      self.__key = args[2]
     attributes = {}
-    if len(args) > 3: attributes = args[3]
+    if len(args) > 3:
+      attributes = args[3]
     Network.Edge.__init__(self, sender, receiver, attributes)
 
   def get_key(self):

@@ -31,10 +31,8 @@ applications inevitably grow in complexity.
 
 import logging
 
-from bb import runtime
 from bb.app.meta_os import OS, Thread, Port
 from bb.app.hardware.devices.processors import Processor
-from bb.utils import typecheck
 
 class ThreadDistributor(object):
   """Base class for thread distributors."""
@@ -96,7 +94,6 @@ class Mapping(object):
       self.set_processor(processor or self.__class__.processor)
     if threads:
       self.register_threads(threads)
-    runtime.get_app_or_die().add_mapping(self)
 
   def __str__(self):
     return '%s[processor=%s,thread_distributor=%s]' \
@@ -107,7 +104,7 @@ class Mapping(object):
 
   def _gen_default_name(self):
     frmt = self.__class__.name_format
-    self.set_name(frmt % runtime.get_app_or_die().get_num_mappings())
+    #self.set_name(frmt % runtime.get_app_or_die().get_num_mappings())
 
   def set_max_message_size(self, size):
     self._max_message_size = size

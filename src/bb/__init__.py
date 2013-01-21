@@ -1,4 +1,5 @@
-from bb import app
-from bb import runtime
+# Copyright (c) 2013 Sladeware LLC
 
-runtime.init()
+from bb import app
+
+bbapp = app
