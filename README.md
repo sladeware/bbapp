@@ -34,3 +34,6 @@ Installation
         $ python setup.py install
 
    All the modules will be installed automatically if required.
+
+> **NOTE:** Developers may use ["development mode"](http://goo.gl/Hoawa) to skip
+> direct installation process: `$ python setup.py develop`.
