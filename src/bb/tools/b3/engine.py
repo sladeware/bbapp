@@ -13,7 +13,7 @@ import inspect
 import os
 import sys
 import optparse
-from functools import partial
+import traceback
 
 from bb.utils import typecheck
 from bb.tools.b3 import commands
@@ -33,6 +33,17 @@ def get_version():
 
 def get_build_root():
   return os.getcwd()
+
+def trace_exception_and_exit():
+  print
+  print "_" * 70
+  print
+  print "EXCEPTION"
+  print "_" * 70
+  print
+  traceback.print_exc(file=sys.stdout)
+  print "_" * 70
+  sys.exit(0)
 
 def exit_and_fail(msg, exit_code=1):
   """Prints msg to STDERR and exits with exit_code."""
@@ -108,4 +119,6 @@ def main():
     run()
   except KeyboardInterrupt:
     exit_and_fail('Interrupted by user.')
+  except:
+    trace_exception_and_exit()
   return 0
