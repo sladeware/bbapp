@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-#
-# http://bionicbunny.org/
-# Copyright (c) 2012 Sladeware LLC
+# http://www.bionicbunny.org/
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Author: Oleksandr Sviridenko
 
@@ -36,7 +34,7 @@ from bb.utils import typecheck
 from bb.utils import spawn
 from bb.utils import path_utils
 
-PARAM_HANDLERS_CACHE = {}
+param_handlers_cache = {}
 
 def param_handler(param):
   """This function is used as decorator to bind handler to specific
@@ -45,8 +43,8 @@ def param_handler(param):
   def wrapper(handler):
     caller_frame = inspect.getouterframes(inspect.currentframe(), 2)
     class_name = caller_frame[1][3]
-    PARAM_HANDLERS_CACHE.setdefault(class_name, {})
-    PARAM_HANDLERS_CACHE[class_name][param] = handler.__name__
+    param_handlers_cache.setdefault(class_name, {})
+    param_handlers_cache[class_name][param] = handler.__name__
     return handler
   return wrapper
 
@@ -116,8 +114,8 @@ class ExecutableWrapperMeta(type):
       cls.Parameters.EXECUTABLE_CLASS = cls
     # Initialize ParamsReaderInterface
     if ParamsReaderInterface in bases:
-      if cls.__name__ in PARAM_HANDLERS_CACHE:
-        cls.PARAM_HANDLERS.update(PARAM_HANDLERS_CACHE[cls.__name__])
+      if cls.__name__ in param_handlers_cache:
+        cls.param_handlers.update(param_handlers_cache[cls.__name__])
     return cls
 
 class ExecutableWrapper(object):

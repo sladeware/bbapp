@@ -34,22 +34,22 @@ def get_version():
 def get_build_root():
   return os.getcwd()
 
-def trace_exception_and_exit():
-  print
-  print "_" * 70
-  print
-  print "EXCEPTION"
-  print "_" * 70
-  print
-  traceback.print_exc(file=sys.stdout)
-  print "_" * 70
-  sys.exit(0)
-
 def exit_and_fail(msg, exit_code=1):
   """Prints msg to STDERR and exits with exit_code."""
   if msg:
     print(msg, file=sys.stderr)
   sys.exit(exit_code)
+
+def trace_exception_and_exit():
+  print()
+  print("_" * 70)
+  print()
+  print("EXCEPTION")
+  print("_" * 70)
+  print()
+  traceback.print_exc(file=sys.stdout)
+  print("_" * 70)
+  sys.exit(0)
 
 def synthesize_command(root_dir, args):
   command = args[0] if len(args) else DEFAULT_COMMAND
@@ -118,7 +118,7 @@ def main():
   try:
     run()
   except KeyboardInterrupt:
-    exit_and_fail('Interrupted by user.')
+    exit_and_fail("Interrupted by user.")
   except:
     trace_exception_and_exit()
   return 0
