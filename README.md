@@ -41,4 +41,6 @@ Installation
    All the modules will be installed automatically if required.
 
 > **NOTE:** Developers may use ["development mode"](http://goo.gl/Hoawa) to skip
-> direct installation process: `$ python setup.py develop`.
+> direct installation process: `$ python setup.py develop`. Once the work has
+> been done you can remove the project source from a staging area using
+> `$ python setup.py develop --uninstall`.
