@@ -18,19 +18,23 @@ All documentation is in the _docs_ directory.
 Installation
 ------------
 
-1. To install bbapp, make sure you have [Python](http://www.python.org) 2.6 or
+1. Download the latest version of BBAPP (see http://www.bionicbunny.org):
+
+        $ git clone git@github.com:sladeware/bbapp.git
+
+2. To install bbapp, make sure you have [Python](http://www.python.org) 2.6 or
    greater installed. If you're in doubt, run:
 
         $ python -V
 
-2. Run the tests:
+3. Run the tests:
 
         $ python setup.py test
 
    If some tests fail, this library may not work correctly on your
    system. Continue at your own risk.
 
-3. Run this command from the command prompt to install `bbapp`:
+4. Run this command from the command prompt to install `bbapp`:
 
         $ python setup.py install
 
