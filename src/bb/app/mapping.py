@@ -33,6 +33,7 @@ import logging
 
 from bb.app.meta_os import OS, Thread, Port
 from bb.app.hardware.devices.processors import Processor
+from bb.utils import typecheck
 
 class ThreadDistributor(object):
   """Base class for thread distributors."""
@@ -101,10 +102,6 @@ class Mapping(object):
            self._processor and self._processor.__class__.__name__ or None,
            self._thread_distributor and \
              self._thread_distributor.__class__.__name__ or None)
-
-  def _gen_default_name(self):
-    frmt = self.__class__.name_format
-    #self.set_name(frmt % runtime.get_app_or_die().get_num_mappings())
 
   def set_max_message_size(self, size):
     self._max_message_size = size

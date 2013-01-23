@@ -175,6 +175,12 @@ class Application(object):
 
   #mapping_mngmnt
 
+  def gen_default_mapping_name(self, mapping):
+    if not isinstance(mapping, Mapping):
+      raise TypeError()
+    frmt = mapping.__class__.name_format
+    return frmt % self.get_num_mappings()
+
   def get_mappings(self):
     """Returns list of mappings registered by this application."""
     return self._network.get_nodes()
@@ -247,8 +253,10 @@ get_active_application = Application.get_active_instance
 # NOTE: this is temporary solution for automatic Mapping registration.
 
 def mapping_init_tracer(self, *args, **kwargs):
-  Mapping.original_magic_init_method(self, *args, **kwargs)
   application = Application.identify_instance()
+  if not len(args) and "name" not in kwargs:
+    kwargs["name"] = application.gen_default_mapping_name(self)
+  Mapping.original_magic_init_method(self, *args, **kwargs)
   application.add_mapping(self)
 
 Mapping.original_magic_init_method = Mapping.__init__
