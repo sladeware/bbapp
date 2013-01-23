@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+# http://www.bionicbunny.org/
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,17 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Author: Oleksandr Sviridenko
 
 """Propeller GCC (propgcc) is GCC for the Parallax Propeller Microcontroller.
 
 How to install
 
 Download compiler <http://code.google.com/p/propgcc/downloads/list> and read
-INSTALL.txt for further instructions.
+`INSTALL.txt` for further instructions.
 """
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
 
 from bb.tools.compilers.gcc import GCC
 from bb.utils import typecheck
@@ -41,7 +41,7 @@ class PropGCC(GCC):
   about Propeller specific options.
   """
 
-  EXECUTABLE = "propeller-elf-gcc"
+  executable = "propeller-elf-gcc"
 
   def __init__(self, *args, **kargs):
     GCC.__init__(self, *args, **kargs)

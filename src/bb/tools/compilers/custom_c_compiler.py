@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+#
+# Author: Oleksandr Sviridenko
 
 # TODO: Move linker specific API from Compiler class to Linker class and start
 # using it.
@@ -25,8 +24,11 @@ import time
 
 from bb.utils import path_utils
 from bb.utils import typecheck
+from bb.utils import logging
 from bb.tools.compilers.compiler import Compiler
 from bb.utils import executable
+
+logger = logging.get_logger("bb")
 
 class Linker(object):
   """Base linker class."""
@@ -57,7 +59,7 @@ class Linker(object):
       self.set_output_filename(path_utils.join(self.get_output_dir(),
                                                  output_filename))
     binary_filename = path_utils.relpath(output_filename, self.output_dir)
-    print "Linking executable:", binary_filename
+    logger.info("Linking executable: %s" % binary_filename)
     self._link(objects, *list_args, **dict_args)
 
 class CustomCCompiler(Compiler):
@@ -123,7 +125,7 @@ class CustomCCompiler(Compiler):
   def get_output_dir(self):
     if self._output_dir:
       return self._output_dir
-    return os.env.pwd()
+    return os.getcwd()
 
   def set_output_file(self, path):
     if not typecheck.is_string(path):
@@ -134,11 +136,10 @@ class CustomCCompiler(Compiler):
   def set_output_name(self, name):
     self.set_output_file(path_utils.join(self.get_output_dir(), name))
 
-  def get_output_file(self):
-    if not self._output_file:
-      return path_utils.abspath(
-        path_utils.join(self.get_output_dir(), self.DEFAULT_OUTPUT_FILE_NAME))
-    return self._output_file
+  def get_output_filename(self):
+    output_filename = self._output_filename or path_utils.abspath(
+      path_utils.join(self.get_output_dir(), self.DEFAULT_OUTPUT_FILE_NAME))
+    return output_filename
 
   def get_default_ccompiler(osname=None, platform=None):
     """Determine the default compiler to use for the given `platform`.
@@ -486,7 +487,7 @@ class CustomCCompiler(Compiler):
     if not self._verbose:
       print
     if link is True:
-      self.link(objects, self.get_output_file())
+      self.link(objects, self.get_output_filename())
     return objects
 
   def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
@@ -527,14 +528,11 @@ class CustomCCompiler(Compiler):
     # Adopt output file name to output directory
     if not output_filename:
       raise Exception("output_filename must be provided")
-    if self.get_output_dir() is not None:
-      output_filename = path_utils.join(self.get_output_dir(),output_filename)
-      self.set_output_filename(output_filename)
-    binary_filename = path_utils.relpath(output_filename, self.get_output_dir())
-    print "Linking executable '%s'" % binary_filename
+    binary_filename = output_filename
+    logger.info("Linking executable '%s'" % binary_filename)
     self._link(objects, *list_args, **dict_args)
-    print "Binary %s, %d byte(s)" % (binary_filename,
-                                     os.path.getsize(binary_filename))
+    logger.info("Binary %s, %d byte(s)" % (binary_filename,
+                                     os.path.getsize(binary_filename)))
 
   def _link(self, objects, output_file_name, output_dir=None, debug=False,
             extra_preargs=None, extra_postargs=None, target_lang=None):

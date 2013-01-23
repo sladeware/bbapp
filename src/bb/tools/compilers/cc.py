@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+#
+# Author: "Oleksandr Sviridenko"
 
 from bb.tools.compilers.custom_c_compiler import CustomCCompiler, Linker
 from bb.utils import spawn
@@ -25,7 +24,7 @@ class LD(Linker):
 
 class Archiver(executable.ExecutableWrapper):
 
-  EXECUTABLE=["ar"]
+  executable = "ar"
 
 class CC(CustomCCompiler):
   """This class is subclass of
@@ -43,7 +42,7 @@ class CC(CustomCCompiler):
 
   SOURCE_EXTENSIONS = [".c", ".C", ".cc", ".cxx", ".cpp"]
   OBJECT_EXTENSION = ".o"
-  EXECUTABLE = "cc"
+  executable = "cc"
 
   def __init__(self, verbose=None, dry_run=False):
     CustomCCompiler.__init__(self, verbose, dry_run)

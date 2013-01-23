@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+#
+# Author: Oleksandr Sviridenko
 
 import inspect
-import logging
 
+from bb.utils import logging
 from bb.utils import executable
 from bb.utils import typecheck
 from bb.utils import path_utils
+
+logger = logging.get_logger("bb")
 
 class Compiler(executable.ExecutableWrapper, executable.ParamsReaderInterface):
   """The base compiler class."""
@@ -69,7 +70,7 @@ class Compiler(executable.ExecutableWrapper, executable.ParamsReaderInterface):
       if not path_utils.exists(path):
         raise Exception("Path doesn't exist: %s" % path)
       if not path in self._files:
-        logging.debug("Add file `%s'" % path)
+        logger.debug("Add file `%s'" % path)
         self._files.append(path)
       return path
     elif typecheck.is_callable(path):
