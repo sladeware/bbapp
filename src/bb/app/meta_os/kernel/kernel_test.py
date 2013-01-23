@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# http://www.bionicbunny.org/
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 #
 # Author: Oleksandr Sviridenko
 
-from bb.testing import unittest
 from bb.app import meta_os
+from bb.utils.testing import unittest
 
 class MicrokernelTest(unittest.TestCase):
 
@@ -28,6 +28,3 @@ class MicrokernelTest(unittest.TestCase):
     self.assert_equal(self._kernel.get_num_threads(), 1)
     self._kernel.unregister_thread(t1)
     self.assert_equal(self._kernel.get_num_threads(), 0)
-
-if __name__ == "__main__":
-  unittest.main()

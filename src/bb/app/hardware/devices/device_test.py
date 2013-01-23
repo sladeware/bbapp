@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#
+# http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +15,9 @@
 #
 # Author: Oleksandr Sviridenko
 
-from bb.testing import unittest
 from bb.app.hardware.devices.device import Device
 from bb.app.hardware import primitives
+from bb.utils.testing import unittest
 
 class DeviceTest(unittest.TestCase):
 

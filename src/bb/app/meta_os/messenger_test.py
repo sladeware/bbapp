@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +14,7 @@
 #
 # Author: Oleksandr Sviridenko
 
-from bb.testing import unittest
+from bb.utils.testing import unittest
 from .messenger import Message, Messenger
 
 class MessageTest(unittest.TestCase):

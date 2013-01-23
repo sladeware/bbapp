@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# http://www.bionicbunny.org/
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,10 @@
 # Author: Oleksandr Sviridenko
 
 from bb.app import meta_os
-from bb.testing import unittest
+from bb.utils.testing import unittest
 
 class PortTest(unittest.TestCase):
 
   def test_capacity(self):
     p0 = meta_os.Port(1)
     self.assert_equal(p0.get_capacity(), 1)
-
-if __name__ == "__main__":
-  unittest.main()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# http://www.bionicbunny.org/
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bb.testing import unittest
+from bb.utils.testing import unittest
 from mapping import Mapping
 from meta_os.thread import Thread
 

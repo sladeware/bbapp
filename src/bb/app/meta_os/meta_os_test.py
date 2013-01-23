@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#
+# http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +17,7 @@
 
 from bb.app.hardware.devices.processors import PropellerP8X32A_Q44
 from bb.app import meta_os
-from bb.testing import unittest
+from bb.utils.testing import unittest
 
 class OSTest(unittest.TestCase):
 
@@ -28,6 +27,3 @@ class OSTest(unittest.TestCase):
 
   def test_get_kernels(self):
     self.assert_equal(self._os.get_kernels(), [])
-
-if __name__ == "__main__":
-  unittest.main()

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +15,7 @@
 # Author: Oleksandr Sviridenko
 
 from bb.app import meta_os
-from bb.testing import unittest
+from bb.utils.testing import unittest
 
 class ThreadTest(unittest.TestCase):
 
@@ -38,6 +36,3 @@ class ThreadTest(unittest.TestCase):
     self.assert_equal(t0.get_runner(), "old_hello_world")
     t0.set_runner("new_hello_world")
     self.assert_equal(t0.get_runner(), "new_hello_world")
-
-if __name__ == "__main__":
-  unittest.main()

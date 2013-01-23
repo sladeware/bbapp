@@ -1,12 +1,9 @@
-#!/usr/bin/env python
+# http://www.bionicbunny.org/
 
-from bb.testing import unittest
+from bb.utils.testing import unittest
 
 class BoardTest(unittest.TestCase):
   pass
 
 class ProtoboardTest(unittest.TestCase):
   pass
-
-if __name__ == "__main__":
-  unittest.main()
