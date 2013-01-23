@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2013 Sladeware LLC
 
-import bb.app
+import bb
 from bb.app.hardware.devices.boards import P8X32A_QuickStartBoard
 from bb.app.hardware.devices.leds import LED
 
