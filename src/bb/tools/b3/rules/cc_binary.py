@@ -30,6 +30,5 @@ class CCBinary(Binary):
         self.compiler.add_file(src)
       elif isinstance(src, Fileset):
         self.compiler.add_files(src.get_sources())
-    self.compiler.set_output_dir(self.address.buildfile.parent_path)
-    self.compiler.set_output_name(self.name)
+    self.compiler.set_output_filename(self.name)
     self.compiler.compile()

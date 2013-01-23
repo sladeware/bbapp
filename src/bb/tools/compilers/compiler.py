@@ -26,6 +26,8 @@ logger = logging.get_logger("bb")
 class Compiler(executable.ExecutableWrapper, executable.ParamsReaderInterface):
   """The base compiler class."""
 
+  default_output_filename = None
+
   def __init__(self, verbose=0, files=[], dry_run=False):
     executable.ExecutableWrapper.__init__(self, verbose=verbose,
                                           dry_run=dry_run)
@@ -40,7 +42,6 @@ class Compiler(executable.ExecutableWrapper, executable.ParamsReaderInterface):
     """Returns list of source files."""
     return self._files
 
-  @executable.param_handler("files")
   def add_files(self, pathes):
     """Adds files from the list."""
     if not typecheck.is_sequence(pathes):
@@ -93,13 +94,16 @@ class Compiler(executable.ExecutableWrapper, executable.ParamsReaderInterface):
   def compile(self, *arg_list, **arg_dict):
     raise NotImplemented
 
-  def set_output_filename(self, filename):
+  def set_output_filename(self, path):
     """Set output file name."""
-    self._output_filename = filename
+    if not typecheck.is_string(path):
+      raise TypeError("'path' must be a string")
+    self._output_filename = path
 
   def get_output_filename(self):
     """Returns output file name."""
-    return self._output_filename
+    default_filename = self.__class__.default_output_filename
+    return self._output_filename or default_filename
 
   def get_output_dir(self):
     """Returns output directory."""

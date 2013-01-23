@@ -88,7 +88,7 @@ class CustomCCompiler(Compiler):
   http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
   """
 
-  DEFAULT_OUTPUT_FILE_NAME = "a.out"
+  default_output_filename = "a.out"
   SOURCE_EXTENSIONS = None
   OBJECT_EXTENSION = None
 
@@ -127,20 +127,6 @@ class CustomCCompiler(Compiler):
     if self._output_dir:
       return self._output_dir
     return bb.user_config.get("b3", "builddir")
-
-  def set_output_file(self, path):
-    if not typecheck.is_string(path):
-      raise TypeError("'path' must be a string")
-    self._output_file = path
-    self.set_output_dir(path_utils.dirname(path))
-
-  def set_output_name(self, name):
-    self.set_output_file(path_utils.join(self.get_output_dir(), name))
-
-  def get_output_filename(self):
-    output_filename = self._output_filename or path_utils.abspath(
-      path_utils.join(self.get_output_dir(), self.DEFAULT_OUTPUT_FILE_NAME))
-    return output_filename
 
   def get_default_ccompiler(osname=None, platform=None):
     """Determine the default compiler to use for the given `platform`.
