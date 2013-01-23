@@ -29,7 +29,7 @@
 import inspect
 import types
 
-from bb.containers import DictWrapper
+from bb.utils.containers import DictWrapper
 from bb.utils import typecheck
 from bb.utils import spawn
 from bb.utils import path_utils
