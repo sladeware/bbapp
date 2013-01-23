@@ -137,7 +137,7 @@ class Application(object):
       home_dir = cls.find_home_dir(path)
       if home_dir:
         return home_dir
-    return cls.find_home_dir(path_utils.realpath(os.curdir))
+    return cls.find_home_dir(path_utils.realpath(os.curdir)) or os.getcwd()
 
   def set_home_dir(self, home_dir):
     if not path_utils.exists(home_dir):
