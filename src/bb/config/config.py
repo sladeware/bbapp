@@ -28,6 +28,9 @@ USER_CONFIG_FILENAME = ".bbconfig"
 DEFAULT_USER_CONFIG = """
 [bbos]
   location =
+
+[b3]
+  builddir = ~/.b3
 """
 
 def set_user_config(cfg):

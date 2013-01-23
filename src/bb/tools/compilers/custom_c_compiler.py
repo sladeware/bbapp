@@ -22,6 +22,7 @@ import os.path
 import sys
 import time
 
+import bb
 from bb.utils import path_utils
 from bb.utils import typecheck
 from bb.utils import logging
@@ -125,7 +126,7 @@ class CustomCCompiler(Compiler):
   def get_output_dir(self):
     if self._output_dir:
       return self._output_dir
-    return os.getcwd()
+    return bb.user_config.get("b3", "builddir")
 
   def set_output_file(self, path):
     if not typecheck.is_string(path):
