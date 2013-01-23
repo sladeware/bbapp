@@ -23,7 +23,8 @@ class CCBinary(Binary):
                     compiler_class=compiler_class)
 
   def execute(self):
-    print("Build propeller binary: %s" % self)
+    print("Build cc binary '%s' with '%s'" %
+          (self.name, self.compiler.__class__.__name__))
     buildfile.dependency_graph.resolve_forks()
     for src in self.get_sources():
       if typecheck.is_string(src):
