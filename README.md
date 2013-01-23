@@ -11,7 +11,8 @@ What is Bionic Bunny Application?
 
 Bionic Bunny Application or **BBAPP** is a high-level Python framework that
 encourages developement of BB based applications. The main goal of BBAPP is to
-generate [BBOS](http://github.org/sladeware/bbos/).
+generate Bionic Bunny Operating System or
+[BBOS](http://github.org/sladeware/bbos/).
 
 All documentation is in the _docs_ directory.
 
