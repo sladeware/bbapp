@@ -45,6 +45,12 @@ class OS(object):
     self._extract_messages()
     self._set_max_message_size(max_message_size)
 
+  def __str__(self):
+    return '%s[processor=%s, num_kernels=%d]' % \
+        (self.__class__.__name__,
+         self._processor and self._processor.__class__.__name__ or None,
+         self.get_num_kernels())
+
   def _set_processor(self, processor):
     if not isinstance(processor, Processor):
       raise Exception('processor must be derived from Processor class.')
@@ -106,14 +112,15 @@ class OS(object):
         drivers.append(thread)
     return drivers
 
+  #msg_mngmnt
+
   def get_max_message_size(self):
     return self._max_message_size
 
   def get_messages(self):
     return self._messages.values()
 
-  def __str__(self):
-    return '%s[processor=%s, num_kernels=%d]' % \
-        (self.__class__.__name__,
-         self._processor and self._processor.__class__.__name__ or None,
-         self.get_num_kernels())
+  def get_num_messages(self):
+    """Returns number of messages supported by threads within this
+    meta-operating system."""
+    return len(self.get_messages())
