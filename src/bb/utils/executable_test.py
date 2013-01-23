@@ -1,10 +1,9 @@
-#!/usr/bin/env python
-#
-# Copyright (c) 2012 Sladeware LLC
+# http://www.bionicbunny.org/
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Author: Oleksandr Sviridenko
 
-from bb.testing import unittest
+from bb.utils.testing import unittest
 from bb.utils import executable
 
 DEFAULT_PROGRAM_PARAMS = executable.ExecutableParams(

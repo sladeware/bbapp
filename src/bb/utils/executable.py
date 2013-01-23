@@ -127,7 +127,7 @@ class ExecutableWrapper(object):
 
   Parameters = ExecutableParameters
 
-  EXECUTABLE = None
+  executable = None
   OPTIONS = []
 
   __metaclass__ = ExecutableWrapperMeta
@@ -142,8 +142,8 @@ class ExecutableWrapper(object):
     self._executable = None
     if executable:
       self.set_executable(executable)
-    elif hasattr(self, "EXECUTABLE"):
-      self.set_executable(self.EXECUTABLE)
+    elif getattr(self.__class__, "executable", None):
+      self.set_executable(self.executable)
     self._verbose = 0
     if verbose:
       self.set_verbosity_level(verbose)
@@ -203,7 +203,7 @@ class ExecutableWrapper(object):
 
   def set_executable(self, executable):
     if not typecheck.is_string(executable):
-      raise TypeError("Has to be string.")
+      raise TypeError("Has to be string: %s" % executable)
     self._executable = executable
 
   def get_executable(self):
