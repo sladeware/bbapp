@@ -22,7 +22,7 @@ import networkx
 
 import bb.object
 from bb.utils import path_utils
-from bb.containers import DictWrapper
+from bb.utils.containers import DictWrapper
 from bb.utils import typecheck
 from bb.tools.interpreters import python
 from bb.tools.b3 import primitives
@@ -236,6 +236,9 @@ class Primitive(object):
   """
 
 class RuleWithSources(object):
+  """This class provides interface for all rules that have a deal with
+  sources and thus have 'srcs' argument.
+  """
 
   def __init__(self, srcs=[]):
     self._sources = []
@@ -252,19 +255,22 @@ class RuleWithSources(object):
     self._sources = []
 
   def add_source(self, source):
-    """The source may have any type."""
+    """The source may have any type. Once source can be added, returns
+    source."""
     if not source:
-      return
+      return None
     if (isinstance(source, object) and not typecheck.is_function(source) and \
           not typecheck.is_string(source)) or \
           (typecheck.is_string(source) and source.startswith(":")):
       if source not in self.get_dependencies():
         rule = parse_address(source)
-        if not rule:
-          raise TypeError("Rule can not be found for this source: %s" % source)
-        self.add_dependency(rule)
-        # Replace source
-        source = rule
+        if rule:
+          self.add_dependency(rule)
+          source = rule
+        else:
+          import logging
+          logging.warning("Cannot find appropriate rule for the source: %s" %
+                          source)
     elif callable(source):
       extra_sources = source(self, self.get_target())
       if not typecheck.is_list(extra_sources):
@@ -272,8 +278,12 @@ class RuleWithSources(object):
       self.add_sources(extra_sources)
       return
     self._sources.append(source)
+    return source
 
   def add_sources(self, sources):
+    """Adds a list of sources with help of add_source() method. Returns
+    nothing.
+    """
     if not typecheck.is_list(sources):
       raise TypeError()
     for source in sources:
