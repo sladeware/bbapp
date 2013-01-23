@@ -74,14 +74,6 @@ def unregister_primitive(name):
 
 _rule_classes = dict()
 
-class RuleFactory(object):
-
-  @staticmethod
-  def gen_name(target, kls):
-    fullname = bb.object.get_class_fullname(target)
-    parts = fullname.split(".")
-    return "_".join(parts + [kls.__name__])
-
 def gen_rule_class_factory(cls):
   name = None
   bases = [cls]
@@ -172,7 +164,7 @@ def parse_address(spec):
           return rule
   return None if not address else get_rule(address)
 
-def get_address(root_dir, pathish, is_relative=True):
+def get_address(root_dir, path, is_relative=True):
   """Parses pathish into an Address. A pathish can be one of:
 
   1. the (relative) path of a BUILD file
@@ -189,8 +181,7 @@ def get_address(root_dir, pathish, is_relative=True):
   specified module rule is not defined in the BUILD file, an IOError is
   raised.
   """
-  parts = pathish.split(':') if not pathish.startswith(':') else \
-      ['.', pathish[1:]]
+  parts = path.split(':') if not path.startswith(':') else ['.', path[1:]]
   path = parts[0]
   if is_relative:
     path = os.path.relpath(os.path.abspath(path), root_dir)
@@ -226,6 +217,9 @@ class TargetProxy(object):
 
   def __call__(self, *args, **kwargs):
     return self._target(*args, **kwargs)
+
+  def __repr__(self):
+    return "%s(%s)" % (self.__class__.__name__, self._target)
 
 def bfs(g, start):
     queue, enqueued = collections.deque([(None, start)]), set([start])
@@ -439,65 +433,6 @@ class Rule(object):
         break
     return common_langs
 
-  def get_resolved_dependency_graph(self, language=None):
-    tree = self.get_dependency_graph()
-    return tree
-    common_langs = self.get_common_languages()
-    if not common_langs:
-      return None
-    if language and language not in common_langs:
-      print language, "not in", common_langs
-      return None
-    else:
-      language = iter(common_langs).next()
-    tree = self.get_dependency_graph()
-    return tree
-    resolved_tree = networkx.DiGraph()
-    print "Selected lang:", language
-    queue, enqueued = collections.deque([(None, self)]), set([self])
-    while queue:
-      parent, node = queue.popleft()
-      if isinstance(node, Fork):
-        for child in tree.successors(node):
-          lang = child.get_property_value("programming_language")
-          if not lang or lang == language:
-            if parent:
-              resolved_tree.add_edge(parent, child)
-            new = set(tree[child]) - enqueued
-            enqueued |= new
-            queue.extend([(child, next_child) for next_child in new])
-            break
-      else:
-        lang = node.get_property_value("programming_language")
-        if not lang or lang == language:
-          new = set(tree[node]) - enqueued
-          enqueued |= new
-          queue.extend([(node, child) for child in new])
-          if parent:
-            resolved_tree.add_edge(parent, node)
-            print parent, "?=>", node
-
-    return resolved_tree
-
-    nodes = []
-    queue = collections.deque([self])
-    while len(queue):
-      node = queue.pop()
-      if isinstance(node, Fork):
-        for child in tree.successors(node):
-          lang = child.get_property_value("programming_language")
-          if not lang or lang == language:
-            nodes.append(child)
-            queue.extend(tree.successors(child))
-            break
-      else:
-        lang = node.get_property_value("programming_language")
-        if not lang or lang == language:
-          nodes.append(node)
-          queue.extend(tree.successors(node))
-    tree = tree.subgraph(nodes)
-    return tree
-
   def add_dependency(self, dep):
     rule = None
     if typecheck.is_tuple(dep) or typecheck.is_list(dep):
@@ -684,6 +619,7 @@ class Context(object):
     return 'Context(BUILD:%s)' % self.buildfile
 
 class BuildFile(object):
+  """This class represents BUILD file."""
 
   _CANONICAL_NAME = "BUILD"
   _NAME_REGEXP = re.compile('^%s(\.[a-z]+)?$' % _CANONICAL_NAME)

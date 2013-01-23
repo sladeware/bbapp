@@ -1,12 +1,13 @@
 # http://www.bionicbunny.org/
-
-__copyright__ = "Copyright (c) 2013 Sladeware LLC"
+# Copyright (c) 2013 Sladeware LLC
 
 import os
 import traceback
 
-from command import Command
+import bb
+from .command import Command
 from bb.tools.b3 import buildfile
+from bb.utils import path_utils
 
 DEFAULT_TARGET = ":all"
 
@@ -22,14 +23,22 @@ class Build(Command):
       self.args = [DEFAULT_TARGET]
     self.rules = []
     addresses = []
-    for spec in self.args[0:]:
+    # TODO: the following injection has to be fixed
+    bbos_src = path_utils.join(bb.user_config.get("bbos", "location"),
+                               "src", "main")
+    bbos_buildfile = buildfile.BuildFile(bbos_src, ".")
+    buildfile.Context(bbos_buildfile).parse()
+    #
+    for target in self.args[0:]:
       try:
-        addresses.append(buildfile.get_address(root_dir, spec))
+        address = buildfile.get_address(root_dir, target)
+        addresses.append(address)
       except:
-        self.error("Problem parsing spec %s: %s" %
-                   (spec, traceback.format_exc()))
+        self.error("Problem parsing target %s: %s" %
+                   (target, traceback.format_exc()))
     for address in addresses:
       try:
+        print buildfile.get_rule(address)
         rule = buildfile.get_rule(address)
       except:
         self.error("Problem parsing BUILD rule %s: %s" %

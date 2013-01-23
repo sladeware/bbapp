@@ -119,6 +119,9 @@ def main():
     run()
   except KeyboardInterrupt:
     exit_and_fail("Interrupted by user.")
+  except SystemExit, e:
+    if e.code > 0:
+      trace_exception_and_exit()
   except:
     trace_exception_and_exit()
   return 0
