@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-#
-# http://bionicbunny.org/
+# http://www.bionicbunny.org/
+# Copyright (c) 2012 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Author: Oleksandr Sviridenko
 
-"""bb.containers package implements well-known containers."""
+"""This package implements well-known containers."""
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
-
-from bb.containers.map import DictWrapper
+from bb.utils.containers.map import DictWrapper
