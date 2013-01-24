@@ -5,7 +5,7 @@
 #
 # Author: Oleksandr Sviridenko <info@bionicbunny.org>
 
-from bb.tools.b3.buildfile import Primitive, Rule
+from bb.tools.b3.buildfile import Rule
 from bb.tools.b3.rules.cc_binary import CCBinary
 from bb.tools.compilers import PropGCC
 from bb.tools.loaders import propler
@@ -21,7 +21,7 @@ class PropellerBinary(CCBinary):
     CCBinary.__init__(self, target=target, name=name, srcs=srcs, deps=deps,
                       compiler_class=compiler_class)
 
-class PropellerLoad(Primitive, Rule):
+class PropellerLoad(Rule):
 
   def __init__(self, name=None, target=None, binary=None, deps=[], port=None,
                baudrate=None, eeprom=False, timeout=None, terminal_mode=False):
@@ -31,6 +31,7 @@ class PropellerLoad(Primitive, Rule):
     self._baudrate = baudrate
     self._eeprom = eeprom
     self._timeout = timeout
+    self._terminal_mode = terminal_mode
     if port:
       self.set_port(port)
 
@@ -51,4 +52,6 @@ class PropellerLoad(Primitive, Rule):
     if not uploader.connect():
       return
     uploader.upload_file(self._binary, eeprom=self._eeprom)
+    if self._terminal_mode:
+      propler.terminal_mode()
     uploader.disconnect()

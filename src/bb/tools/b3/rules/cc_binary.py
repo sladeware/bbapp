@@ -13,6 +13,7 @@ from bb.utils import typecheck
 
 class CCBinary(Binary):
 
+  is_language_dependent = True
   properties = (("programming_language", "c"),)
 
   def __init__(self, target=None, name=None, srcs=[], deps=[],
@@ -24,12 +25,15 @@ class CCBinary(Binary):
 
   def execute(self):
     print("Build cc binary '%s' with '%s'" %
-          (self.name, self.compiler.__class__.__name__))
+          (self.get_name(), self.compiler.__class__.__name__))
     buildfile.dependency_graph.resolve_forks()
     for src in self.get_sources():
       if typecheck.is_string(src):
         self.compiler.add_file(src)
       elif isinstance(src, Fileset):
         self.compiler.add_files(src.get_sources())
-    self.compiler.set_output_filename(self.name)
+    if not self.compiler.get_files():
+      print "No input files"
+      exit(0)
+    self.compiler.set_output_filename(self.get_name())
     self.compiler.compile()
