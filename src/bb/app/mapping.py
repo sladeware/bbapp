@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Author: Oleksandr Sviridenko
+# Author: Oleksandr Sviridenko <info@bionicbunny.org>
 
 """The mapping of hardware resources to software runtime components such as
 processes, threads, queues and pools is determined at compile time. Thereby
@@ -29,11 +29,12 @@ mapping to system integrators that need to incorporate new software features as
 applications inevitably grow in complexity.
 """
 
-import logging
-
 from bb.app.meta_os import OS, Thread, Port
 from bb.app.hardware.devices.processors import Processor
 from bb.utils import typecheck
+from bb.utils import logging
+
+logger = logging.get_logger("bb")
 
 class ThreadDistributor(object):
   """Base class for thread distributors."""
@@ -103,6 +104,10 @@ class Mapping(object):
            self._thread_distributor and \
              self._thread_distributor.__class__.__name__ or None)
 
+  def __call__(self, *args, **kwargs):
+    """The mapping instance call eq to gen_os()."""
+    return self.gen_os(*args, **kwargs)
+
   def set_max_message_size(self, size):
     self._max_message_size = size
 
@@ -136,8 +141,8 @@ class Mapping(object):
     if thread.get_name() is None:
       frmt = thread.get_name_format()
       if not frmt:
-        logging.warning("Thread %s doesn't have a name and the format cannot be"
-                        "obtained to generate one." % thread)
+        logger.warning("Thread %s doesn't have a name and the format cannot be"
+                       "obtained to generate one." % thread)
         return
       # TODO(team): improve name generation within a mapping
       thread.set_name(frmt % self.get_num_threads())
@@ -181,7 +186,7 @@ class Mapping(object):
     self._processor = processor
     driver = processor.get_driver()
     if not driver:
-      logging.warning("Processor %s doesn't have a driver" % processor)
+      logger.warning("Processor %s doesn't have a driver" % processor)
       return
     self.register_thread(driver)
 
@@ -207,14 +212,16 @@ class Mapping(object):
     """Generates OS based on mapping analysis. Returns :class:`bb.app.os.os.OS`
     based instance.
     """
+    logger.info("Process mapping %s" % self.get_name())
     processor = self.get_processor()
     if not processor:
       raise Exception("Processor wasn't defined")
     if not self.get_num_threads():
-      raise Exception("No threads. Nothing to do.")
+      raise Exception("Mapping doesn't have threads. Nothing to do.")
     distributor = self.get_thread_distributor()
     if not distributor:
       raise Exception("Thread-distributor wasn't defined")
+    logger.info("Generate OS")
     distribution = distributor(self.get_threads(), processor)
     for core, threads in distribution.items():
       if not threads:
@@ -224,6 +231,9 @@ class Mapping(object):
       core.set_kernel(kernel)
     os = self._os_class(processor=processor,
                         max_message_size=self.get_max_message_size())
+    # A few simple verifications
+    if not os.get_num_kernels():
+      raise Exception("OS should have atleast one kernel.")
     processor.set_os(os)
     return os
 

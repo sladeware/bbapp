@@ -56,6 +56,20 @@ class OS(object):
       raise Exception('processor must be derived from Processor class.')
     self._processor = processor
 
+  def dump(self):
+    """Prints meta os state."""
+    print "Meta OS"
+    print "processor: %s" % self.get_processor()
+    print "%d thread(s)%s" % (self.get_num_threads(),
+                                self.get_num_threads and ":" or "")
+    for i, thread in enumerate(self.get_threads()):
+      print "  %d. %s" % (i, str(thread))
+    print "%d message(s)%s" % (self.get_num_messages(),
+                                       self.get_num_messages() and ":" or "")
+    for i, message in enumerate(self.get_messages()):
+      print "  %d. %s" % (i ,str(message))
+    print "max message size: %s byte(s)" % self.get_max_message_size()
+
   def _set_max_message_size(self, max_size=0):
     size = 0
     # Compute min message size
