@@ -5,8 +5,13 @@
 #
 # Author: Oleksandr Sviridenko <info@bionicbunny.org>
 
+from __future__ import print_function
+
+import sys
+
 from bb.tools.b3 import buildfile
 from bb.tools.b3.rules.binary import Binary
+from bb.tools.b3.rules.cc_library import CCLibrary
 from bb.tools.b3.rules.fileset import Fileset
 from bb.tools.compilers import GCC
 from bb.utils import typecheck
@@ -32,8 +37,11 @@ class CCBinary(Binary):
         self.compiler.add_file(src)
       elif isinstance(src, Fileset):
         self.compiler.add_files(src.get_sources())
+    for dep in self.get_dependencies():
+      if isinstance(dep, CCLibrary):
+        self.compiler.add_files(dep.get_sources())
     if not self.compiler.get_files():
-      print "No input files"
+      print("No source files", file=sys.stderr)
       exit(0)
     self.compiler.set_output_filename(self.get_name())
     self.compiler.compile()
