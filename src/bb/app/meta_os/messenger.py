@@ -34,11 +34,12 @@ the message is directed to :func:`SerialMessenger.serial_open_handler`
 handler for the actual processing.
 """
 
-import logging
-
+from bb.utils import logging
 from bb.utils import typecheck
 from thread import Thread
 from message import Message
+
+logger = logging.get_logger("bb")
 
 class Messenger(Thread):
   """This class is a special form of thread, which allows to automatically
@@ -62,11 +63,11 @@ class Messenger(Thread):
     self._default_action = None
     self._idle_action = None
     self._message_handlers = {}
-    if default_action or hasattr(self.__class__, "default_action"):
+    if default_action or getattr(self.__class__, "default_action", None):
       self.set_default_action(default_action or self.__class__.default_action)
-    if idle_action or hasattr(self, "idle_action"):
-      self.get_idle_action(idle_action or self.__class__.idle_action)
-    if mssage_handlers or hasattr(self.__class__, "message_handlers"):
+    if idle_action or getattr(self.__class__, "idle_action", None):
+      self.set_idle_action(idle_action or self.__class__.idle_action)
+    if message_handlers or getattr(self.__class__, "message_handlers", None):
       self.add_message_handlers(message_handlers \
                                   or self.__class__.message_handlers)
 
@@ -74,12 +75,16 @@ class Messenger(Thread):
     return self._default_action
 
   def set_default_action(self, action):
+    if not typecheck.is_function(action):
+      raise TypeError("action has to be a function: %s" % action)
     self._default_action = action
 
   def get_idle_action(self):
     return self._idle_action
 
   def set_idle_action(self, action):
+    if not typecheck.is_function(action):
+      raise TypeError("action has to be a function: %s" % action)
     self._idle_action = action
 
   def get_message_handler(self, message):
@@ -99,8 +104,8 @@ class Messenger(Thread):
     if not typecheck.is_string(handler):
       raise TypeError('message handler has to be a string')
     if not handler.endswith('_handler'):
-      logging.warning("Message handler '%s' that handles message '%s' "
-                      "doesn't end with '_handler'" % (handler, message))
+      logger.warning("Message handler '%s' that handles message '%s' "
+                     "doesn't end with '_handler'" % (handler, message))
     self._message_handlers[message] = handler
     return self
 
