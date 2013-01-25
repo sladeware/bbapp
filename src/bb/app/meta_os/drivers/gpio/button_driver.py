@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+# http://www.bionicbunny.org/
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Author: Oleksandr Sviridenko
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
-
-import bb
-from bb.meta_os import Driver, Message
+from bb.app.meta_os import Driver, Message
 
 class ButtonDriver(Driver):
 
-  NAME_FORMAT = 'BUTTON_DRIVER_%d'
-  RUNNER = 'button_driver_runner'
-  MESSAGE_HANDLERS = {
+  name_format = 'BUTTON_DRIVER_%d'
+  runner = 'button_driver_runner'
+  message_handlers = {
     Message("IS_BUTTON_PRESSED", [("pin", 1)]): "is_button_pressed",
     Message("ARE_BUTTONS_PRESSED", [("mask", 2)]): "are_buttons_pressed"
   }

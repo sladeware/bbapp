@@ -71,7 +71,7 @@ class Primitive(object):
   :func:`set_designator_format` method.
   """
 
-  PROPERTIES = ()
+  properties = ()
   """Dictionary of default properties used by all the primitives that will
   inherit this class.
   """
@@ -91,8 +91,8 @@ class Primitive(object):
       self.set_designator(designator)
     else:
       self.generate_designator()
-    if self.PROPERTIES:
-      self.add_properties(self.PROPERTIES)
+    if getattr(self.__class__, "properties", None):
+      self.add_properties(self.__class__.properties)
 
   def clone(self):
     """Creates and returns a copy of this object. The default implementation

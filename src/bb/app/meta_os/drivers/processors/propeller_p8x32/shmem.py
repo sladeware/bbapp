@@ -1,10 +1,11 @@
-#!/usr/bin/env python
+# http://www.bionicbunny.org/
+# Copyright (c) 2012-2013 Sladeware LLC
+#
+# Author: Oleksandr Sviridenko
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
-
-from bb.meta_os.drivers.driver import Driver
+from bb.app.meta_os.drivers.driver import Driver
 
 class ShMemDriver(Driver):
-  NAME = 'SHMEM_DRIVER'
-  RUNNER = 'shmem_driver_runner'
+
+  name_format = 'SHMEM_DRIVER_%d'
+  runner = 'shmem_driver_runner'
