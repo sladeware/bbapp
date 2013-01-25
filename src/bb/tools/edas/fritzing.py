@@ -1,4 +1,7 @@
-#!/usr/bin/env python
+# -*- coding: utf-8; -*-
+#
+# http://www.bionicbunny.org
+# Copyright (c) 2012 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +14,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Author: Oleksandr Sviridenko <info@bionicbunny.org>
 
 """This module provides compatibility with `Fritzing <http://fritzing.org>`_.
 
@@ -21,14 +26,11 @@ installed. You can do with with help of :func:`set_home_dir` or set
 At the very first time, once you will try to interract with parts, Fritzing will
 use :func:`bb.tools.fritzing.index_parts` to automatically index all parts
 located on your machine at search pathes (see
-:func:`bb.tools.fritzing.get_search_pathes()`). All the indexed parts will be
-stored at index file. This file has `JSON (JavaScript Object Notation) format
+:func:`bb.tools.edas.fritzing.get_search_pathes()`). All the indexed parts will
+be stored at index file. This file has `JSON (JavaScript Object Notation) format
 <http://en.wikipedia.org/wiki/JSON>`_ and its name can be obtained by
 :func:`bb.tools.fritzing.get_index_filename`.
 """
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Olexander Sviridenko"
 
 import copy
 import json
@@ -43,9 +45,9 @@ import xml.dom
 import xml.dom.minidom
 import zipfile
 
-from bb.hardware import primitives
-from bb.hardware.devices import Device
-from bb.crypto import md5
+from bb.app.hardware import primitives
+from bb.app.hardware.devices import Device
+from bb.utils.crypto import md5
 from bb.utils import typecheck
 
 # TODO(team): The tool has to be tread-safe.
@@ -98,20 +100,23 @@ def get_home_dir():
   return _home_dir
 
 def set_home_dir(path):
-    """Set Fritzing home directory."""
-    global _home_dir
-    if not path or not os.path.exists(path):
-        raise IOError("Directory '%s' does not exist" % path)
-    _home_dir = path
+  """Set Fritzing home directory."""
+  global _home_dir
+  if not path or not typecheck.is_string(path):
+    raise TypeError("path has to be defined and be a string: %s" % path)
+  path = os.path.expanduser(path)
+  if not os.path.exists(path):
+    raise IOError("Directory '%s' does not exist" % path)
+  _home_dir = path
 
 def get_default_user_dir():
-    """Return default path to the global Fritzing user directory depending on
-    operating system (``os.name``).
-    """
-    default_dirs = {
-        'posix': '%s/.config/Fritzing' % os.environ['HOME'],
-    }
-    return default_dirs.get(os.name, None)
+  """Return default path to the global Fritzing user directory depending on
+  operating system (``os.name``).
+  """
+  default_dirs = {
+    'posix': '%s/.config/Fritzing' % os.environ['HOME'],
+  }
+  return default_dirs.get(os.name, None)
 
 def get_user_dir():
     """Return path to the global user directory. The location of this directory
@@ -179,9 +184,9 @@ def set_index_filename(filename):
     _index_filename = filename
 
 def get_index_filename():
-    """Return the name of index file."""
-    global _index_filename
-    return _index_filename
+  """Return the name of index file."""
+  global _index_filename
+  return _index_filename
 
 _parts_index = dict()
 _part_handlers_by_id = dict()
@@ -214,15 +219,17 @@ def index_parts(search_pathes=None, force=False):
         # processed in a special way.
         magic_pathes = list()
         if not get_home_dir():
-            _logger.error('Home directory can not be defined.' \
-                              'Please set it manually by using bb.tools.fritzing.set_home_dir().')
+            _logger.error('Home directory can not be defined.'
+                          'Please set it manually by using '
+                          'bb.tools.fritzing.set_home_dir().')
             raise Exception('Home directory can not be defined.')
         else:
             search_pathes.remove(get_home_dir())
             magic_pathes.append(get_home_dir())
         if not get_user_dir():
-            _logger.warning('User specific directory can not be defined.' \
-                                'Please set it manually by using bb.tools.fritzing.set_user_dir()')
+            _logger.warning('User specific directory can not be defined.'
+                            'Please set it manually by using '
+                            'bb.tools.fritzing.set_user_dir()')
         else:
             search_pathes.remove(get_user_dir())
             magic_pathes.append(get_home_dir())
