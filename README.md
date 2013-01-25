@@ -14,7 +14,7 @@ encourages developement of BB based applications. The main goal of BBAPP is to
 generate Bionic Bunny Operating System or
 [BBOS](http://github.org/sladeware/bbos/).
 
-All documentation is in the _docs_ directory.
+All documentation is in the _doc_ directory.
 
 Installation
 ------------
@@ -23,7 +23,7 @@ Installation
 
         $ git clone git@github.com:sladeware/bbapp.git
 
-2. To install bbapp, make sure you have [Python](http://www.python.org) 2.6 or
+2. To install bbapp, make sure you have [Python](http://www.python.org/) 2.6 or
    greater installed. If you're in doubt, run:
 
         $ python -V
