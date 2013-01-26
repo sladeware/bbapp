@@ -1,8 +1,5 @@
+:mod:`bb.app.hardware.devices.device` --- Device
+================================================
 
-:mod:`bb.hardware.devices.device` --- Device
-============================================
-
-.. automodule:: bb.hardware.devices.device
+.. automodule:: bb.app.hardware.devices.device
    :members:
-   
-

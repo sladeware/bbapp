@@ -1,4 +1,3 @@
-
 ==========
 Processors
 ==========
@@ -12,11 +11,8 @@ List of supported processors:
 
    Propeller P8X32A <propeller_p8x32.rst>
 
+:mod:`bb.app.hardware.devices.processors.processor` --- Processor
+=================================================================
 
-:mod:`bb.hardware.devices.processors.processor` --- Processor
-=============================================================
-
-.. automodule:: bb.hardware.devices.processors.processor
+.. automodule:: bb.app.hardware.devices.processors.processor
    :members:
-
-

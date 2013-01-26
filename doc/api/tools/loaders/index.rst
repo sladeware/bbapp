@@ -2,14 +2,8 @@
 Loaders
 *******
 
-:mod:`bb.tools.loaders.loader` --- Loader
-=========================================
+.. toctree::
 
-.. automodule:: bb.tools.loaders.loader
-   :members:
-
-:mod:`bb.tools.loaders.bstl` --- BSTL
-=====================================
-
-.. automodule:: bb.tools.loaders.bstl
-   :members:
+   bstl.rst
+   loader.rst
+   propler.rst

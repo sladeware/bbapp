@@ -1,8 +1,5 @@
+:mod:`bb.app.hardware.primitives` --- Primitives
+================================================
 
-
-:mod:`bb.hardware.primitives` --- Primitives
-============================================
-
-.. automodule:: bb.hardware.primitives
+.. automodule:: bb.app.hardware.primitives
    :members:
-

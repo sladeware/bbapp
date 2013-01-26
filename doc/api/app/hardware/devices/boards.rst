@@ -1,23 +1,23 @@
+.. _api:
 
 ======
 Boards
 ======
 
-:mod:`bb.hardware.devices.boards.board` --- Board
-=================================================
+:mod:`bb.app.hardware.devices.boards.board` --- Board
+=====================================================
 
-.. automodule:: bb.hardware.devices.boards.board
+.. automodule:: bb.app.hardware.devices.boards.board
    :members:
 
+:mod:`bb.app.hardware.devices.boards.p8x32a_quickstart` --- P8X32AQuickStart
+============================================================================
 
-:mod:`bb.hardware.devices.boards.p8x32a_quickstart` --- P8X32AQuickStart
-========================================================================
-
-.. automodule:: bb.hardware.devices.boards.p8x32a_quickstart
+.. automodule:: bb.app.hardware.devices.boards.p8x32a_quickstart
    :members:
 
-:mod:`bb.hardware.devices.boards.propeller_demo_board` --- PropellerDemoBoard
-=============================================================================
+:mod:`bb.app.hardware.devices.boards.propeller_demo_board` --- PropellerDemoBoard
+================================================================================
 
-.. automodule:: bb.hardware.devices.boards.propeller_demo_board
+.. automodule:: bb.app.hardware.devices.boards.propeller_demo_board
    :members:

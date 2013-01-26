@@ -12,5 +12,5 @@ Application
 
    app.rst
    mapping.rst
-   object.rst
-   os/index.rst
+   meta_os/index.rst
+   hardware/index.rst

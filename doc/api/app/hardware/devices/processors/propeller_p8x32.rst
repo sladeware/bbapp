@@ -1,7 +1,5 @@
+:mod:`bb.app.hardware.devices.processors.propeller_p8x32` --- PropellerP8X32
+============================================================================
 
-:mod:`bb.hardware.devices.processors.propeller_p8x32` --- PropellerP8X32
-========================================================================
-
-.. automodule:: bb.hardware.devices.processors.propeller_p8x32
+.. automodule:: bb.app.hardware.devices.processors.propeller_p8x32
    :members:
-

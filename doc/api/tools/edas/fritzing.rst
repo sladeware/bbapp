@@ -7,17 +7,17 @@ support designers and artists ready to move from physical prototyping to actual
 product. It was developed at the University of Applied Sciences of Potsdam.
 
 This tool provides BB hardware compatibility with Fritzing EDA and represented
-by :mod:`bb.tools.eda.fritzing` package.
+by :mod:`bb.tools.edas.fritzing` package.
 
 How to install?
 ---------------
 
 Download the `lastest <http://fritzing.org/download/>`_ Fritzing version and
-install it. Then use :mod:`bb.tools.fritzing` from your application to read
+install it. Then use :mod:`bb.tools.edas.fritzing` from your application to read
 and work with Fritzing parts and sketches.
 
-:mod:`bb.tools.eda.fritzing` --- Fritzing
-=========================================
+:mod:`bb.tools.edas.fritzing` --- Fritzing
+==========================================
 
-.. automodule:: bb.tools.eda.fritzing
+.. automodule:: bb.tools.edas.fritzing
    :members:

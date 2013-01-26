@@ -10,4 +10,3 @@ Devices
    device.rst
    boards.rst
    processors/index.rst
-
