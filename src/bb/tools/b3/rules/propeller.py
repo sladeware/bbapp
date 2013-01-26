@@ -6,7 +6,7 @@
 # Author: Oleksandr Sviridenko <info@bionicbunny.org>
 
 from bb.tools.b3.buildfile import Rule
-from bb.tools.b3.rules.cc_binary import CCBinary
+from bb.tools.b3.rules.cc import CCBinary
 from bb.tools.compilers import PropGCC
 from bb.tools.loaders import propler
 from bb.utils import path_utils
