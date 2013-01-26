@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+# http://www.bionicbunny.org/
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksander Sviridenko"
+#
+# Author: Oleksandr Sviridenko
 
 import os
 import sys
@@ -46,10 +46,9 @@ def spawn(cmd, search_path=True, debug=False, dry_run=False):
   is the program to run and ``cmd[1:]`` are the rest of its arguments. There is
   no way to run a program with a name different from that of its executable.
 
-  If `search_path` is true (the default), the system's executable
-  search path will be used to find the program; otherwise, cmd[0]
-  must be the exact path to the executable.  If 'dry_run' is true,
-  the command will not actually be run.
+  If `search_path` is true (the default), the system's executable search path
+  will be used to find the program; otherwise, cmd[0] must be the exact path to
+  the executable. If 'dry_run' is true, the command will not actually be run.
 
   Raise :class:`ExecutionError` if running the program fails in any way; just
   return on success.
@@ -104,25 +103,23 @@ def _spawn_posix(cmd, search_path=True, debug=False):
         import errno
         if exc.errno == errno.EINTR:
           continue
-        raise ExecutionError("command '%s' failed: %s"
-                             % (cmd[0], exc[-1]))
+        raise ExecutionError("Command '%s' failed: %s" % (cmd[0], exc[-1]))
       if not debug:
         os.close(child_stdin)
         os.close(child_stdout)
         os.close(child_stderr)
       if os.WIFSIGNALED(status):
-        raise ExecutionError("command '%s' terminated by signal %d"
+        raise ExecutionError("Command '%s' terminated by signal %d"
                              % (cmd[0], os.WTERMSIG(status)))
       elif os.WIFEXITED(status):
         exit_status = os.WEXITSTATUS(status)
         if exit_status == 0:
           return # hey, it succeeded!
         else:
-          raise ExecutionError("command '%s' failed with exit status %d"
+          raise ExecutionError("Command '%s' failed with exit status %d"
                                % (cmd[0], exit_status))
       elif os.WIFSTOPPED(status):
         continue
       else:
-        raise ExecutionError(
-          "unknown error executing '%s': termination status %d"
-          % (cmd[0], status))
+        raise ExecutionError("Unknown error executing %s: termination status %d"
+                             % (cmd[0], status))
