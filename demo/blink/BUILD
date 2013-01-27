@@ -9,3 +9,9 @@ propeller_binary(name = "8x8_led_matrix",
 
 propeller_binary(target = "blink",
                  srcs = [sensor])
+
+propeller_load(name = "blink-load",
+               binary = "blink",
+               deps = [":blink"],
+               port = "/dev/ttyUSB0",
+               eeprom = False)
