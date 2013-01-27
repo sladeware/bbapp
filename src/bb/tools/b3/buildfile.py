@@ -20,12 +20,17 @@ from glob import glob1
 from contextlib import contextmanager
 import networkx
 
+import bb
 import bb.object
 from bb.utils import path_utils
+from bb.utils import logging
+from bb.utils import proxy
 from bb.utils.containers import DictWrapper
 from bb.utils import typecheck
 from bb.tools.interpreters import python
 from bb.tools.b3 import primitives
+
+logger = logging.get_logger("bb")
 
 _addresses_by_buildfile = collections.defaultdict(set)
 _rules_by_address = dict()
@@ -44,7 +49,7 @@ class DependencyGraph(networkx.DiGraph):
         parent_lang = parent.get_property_value("programming_language")
         for child in self.successors(fork):
           child_lang = child.get_property_value("programming_language")
-          if parent_lang == child_lang:
+          if not child_lang or parent_lang == child_lang:
             self.remove_edge(parent, fork)
             self.add_edge(parent, child)
             break
@@ -65,7 +70,7 @@ def register_primitive(primitive, name=None):
   if not name:
     name = primitive.__name__
   if hasattr(primitives, name):
-    logging.warning("Primitive %s will be replaced" % name)
+    logger.warning("Primitive %s will be replaced" % name)
   setattr(primitives, name, primitive)
   return primitive
 
@@ -74,49 +79,83 @@ def unregister_primitive(name):
 
 _rule_classes = dict()
 
-def gen_rule_class_factory(cls):
-  name = None
-  bases = [cls]
-  def gen_name(target, kls):
+class RuleClassFactory(object):
+  """This factory generates rule classes bases on a given rule class, e.g.
+  RuleClassFactory(CCBinary).gen() will generate another CCBinary rule
+  class. The key moment here is arguments that you can pass to gen() method.
+  """
+
+  template = """class %(name)s(%(unrolled_bases)s):
+  abstract = rule_cls.abstract
+  default_args = args
+  default_kwargs = kwargs
+
+  def __init__(self, *fargs, **fkwargs):
+    new_kwargs = None
+    if parent_class:
+      new_kwargs = DictWrapper(getattr(parent_class, "default_kwargs").copy())
+      new_kwargs.update(kwargs)
+    else:
+      new_kwargs = DictWrapper(kwargs.copy())
+    new_kwargs.update(fkwargs)
+    # MRO will fix all subclass collisions
+    rule_cls.__init__(self, *(args + fargs), **new_kwargs)
+
+  def locate(self):
+    return Address(ctx.buildfile, self.get_name())"""
+
+  def __init__(self, rule_cls):
+    self._rule_cls = rule_cls
+
+  def gen_name(self, target, cls):
     fullname = bb.object.get_class_fullname(target)
     parts = fullname.split(".")
-    return "_".join(parts[:-1] + [parts[-1] + kls.__name__])
-  def factory(*args, **kwargs):
-    target = kwargs["target"]
-    name = gen_name(target, cls)
+    return "_".join(parts[:-1] + [parts[-1] + cls.__name__])
+
+  def gen(self, *args, **kwargs):
+    bases = [self._rule_cls]
+    target = len(args) and args[0] or kwargs.get("target", None)
+    if not target:
+      raise Exception()
+    name = self.gen_name(target, self._rule_cls)
     parent_class = None
-    for subklass in cls.__bases__:
-      parent_class = _rule_classes.get(gen_name(target, subklass), None)
+    for subklass in self._rule_cls.__bases__:
+      parent_class = _rule_classes.get(self.gen_name(target, subklass), None)
       if parent_class:
         bases.append(parent_class)
         break
-    def __init__(self, *fargs, **fkwargs):
-      new_kwargs = None
-      if parent_class:
-        new_kwargs = DictWrapper(getattr(parent_class, "default_kwargs").copy())
-        new_kwargs.update(kwargs)
-      else:
-        new_kwargs = DictWrapper(kwargs.copy())
-      new_kwargs.update(fkwargs)
-      cls.__init__(self, *(args + fargs), **new_kwargs)
-    # MRO will fix all subclass collisions
-    klass = type(name, tuple(bases), {
-        "__init__": __init__,
-        "abstract": cls.abstract,
-        "default_args": args,
-        "default_kwargs": kwargs,
-    })
+    try:
+      result = self.template % {
+        'name': name,
+        'unrolled_bases': ','.join(["bases[%d]" % i for i in range(len(bases))])
+      }
+    except Exception, e:
+      raise Exception(e.message + ":\n" + self.template)
+    namespace = dict(rule_cls=self._rule_cls,
+                     bases=bases,
+                     parent_class = parent_class,
+                     DictWrapper = DictWrapper,
+                     Address = Address,
+                     ctx=Context.locate(),
+                     args=args,
+                     kwargs=kwargs)
+    try:
+      exec result in namespace
+    except SyntaxError, e:
+      raise SyntaxError(e.message + ':\n' + self.template.format(namespace))
+    klass = namespace[name]
     _rule_classes[name] = klass
     if not klass.abstract:
       _dynamic_rules[target].add(klass)
     return klass
-  return factory
+
+  __call__ = gen
 
 def register_rule(rule, address=None):
   if not address:
-    address = rule.address
+    address = rule.get_address()
   existing = _rules_by_address.get(address)
-  if existing and existing.address.buildfile != address.buildfile:
+  if existing and existing.get_address().buildfile != address.buildfile:
     raise KeyError("%s already defined in a sibling BUILD file: %s" % (
       address,
       existing.address,
@@ -197,30 +236,7 @@ def get_address(root_dir, path, is_relative=True):
     rule_name = ':'.join(parts[1:])
     return Address(buildfile, rule_name)
 
-class TargetProxy(object):
-
-  def __init__(self, target):
-    self._target = target
-
-  @property
-  def __name__(self):
-    if typecheck.is_string(self._target):
-      return self._target
-    elif typecheck.is_function(self._target) or \
-          typecheck.is_class(self._target):
-      return self._target.__name__
-    elif isinstance(self._target, object):
-      return "i%d" % id(self._target)
-
-  def __getattr__(self, name):
-    return getattr(self._target, name)
-
-  def __call__(self, *args, **kwargs):
-    return self._target(*args, **kwargs)
-
-  def __repr__(self):
-    return "%s(%s)" % (self.__class__.__name__, self._target)
-
+# TODO: this routine has to be moved somewhere in graph package.
 def bfs(g, start):
     queue, enqueued = collections.deque([(None, start)]), set([start])
     while queue:
@@ -241,6 +257,7 @@ class RuleWithSources(object):
   """
 
   def __init__(self, srcs=[]):
+    self._work_dir = self._find_work_dir()
     self._sources = []
     if srcs:
       self.add_sources(srcs)
@@ -251,32 +268,64 @@ class RuleWithSources(object):
     self.add_sources(other.get_sources())
     return self
 
+  def _find_work_dir(self):
+    """Find and return work directory."""
+    cwd = os.path.abspath(os.getcwd())
+    path = os.path.relpath(self.get_address().buildfile.parent_path, cwd)
+    return os.path.abspath(path)
+
+  def get_work_dir(self):
+    return self._work_dir
+
+  def set_work_dir(self, path):
+    if not typecheck.is_string(path):
+      raise TypeError()
+    self._work_dir = path
+
   def clear_sources(self):
     self._sources = []
 
+  def _add_callable_source(self, func):
+    if not callable(func):
+      raise TypeError()
+    required_args = []
+    if func.func_code.co_argcount >= 2:
+      required_args = [self, self.get_target()]
+    extra_sources = func(*required_args)
+    if extra_sources:
+      extra_sources = typecheck.is_list(extra_sources) and extra_sources or \
+          [extra_sources]
+      self.add_sources(extra_sources)
+
   def add_source(self, source):
-    """The source may have any type. Once source can be added, returns
-    source."""
+    """The source may have any type, it can be another rule, string, function or
+    an outside object. However, it cannot be None. Returns source, once it has
+    been added.
+    """
     if not source:
-      return None
+      raise TypeError()
+    # The source is an object or another rule.
     if (isinstance(source, object) and not typecheck.is_function(source) and \
           not typecheck.is_string(source)) or \
           (typecheck.is_string(source) and source.startswith(":")):
-      if source not in self.get_dependencies():
-        rule = parse_address(source)
-        if rule:
-          self.add_dependency(rule)
-          source = rule
-        else:
-          import logging
-          logging.warning("Cannot find appropriate rule for the source: %s" %
-                          source)
+      rule = parse_address(source)
+      if rule:
+        if source not in self.get_dependencies(): self.add_dependency(rule)
+        source = rule
+      else:
+        if callable(source):
+          self._add_callable_source(source.__call__)
+          return
+        logger.warning("Cannot find appropriate rule for the source: %s" %
+                       source)
+    # Source is a function or something that we should call. The result is
+    # assumed to be an extra sources that will be added with add_sources().
     elif callable(source):
-      extra_sources = source(self, self.get_target())
-      if not typecheck.is_list(extra_sources):
-        raise TypeError("callable source has to return list of sources")
-      self.add_sources(extra_sources)
+      self._add_callable_source(source)
       return
+    elif typecheck.is_string(source):
+      if not os.path.isabs(source):
+        source = os.path.abspath(os.path.join(self._work_dir, source))
     self._sources.append(source)
     return source
 
@@ -285,7 +334,7 @@ class RuleWithSources(object):
     nothing.
     """
     if not typecheck.is_list(sources):
-      raise TypeError()
+      raise TypeError("Not a list of sources: %s" % sources)
     for source in sources:
       self.add_source(source)
 
@@ -309,7 +358,7 @@ class rule(type):
     if Primitive in bb.object.get_all_subclasses(cls):
       name = mcls.gen_primitive_name(cls)
       register_primitive(cls, name)
-      factory = gen_rule_class_factory(cls)
+      factory = RuleClassFactory(cls)
       register_primitive(factory, "%s_factory" % name)
     return cls
 
@@ -318,45 +367,91 @@ class rule(type):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', cls.__name__)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
-class Rule(object):
+class Rule(Primitive):
   """Within a BUILD file we have a number of named rules describing the build
-  outputs of the package.
+  outputs.
   """
 
   __metaclass__ = rule
 
+  is_language_dependent = False
+
+  # Interfaces
   WithSources = RuleWithSources
 
-  labels = ()
-
-  def __init__(self, target=None, name=None, deps=[]):
+  def __init__(self, target=None, name=None, execute=None, deps=[]):
+    """Each rule has a name that identifies it within existed context. In case
+    name wasn't provided, it becomes a target and vice-versa.
+    """
     if not target and not name:
-      raise Exception()
+      raise Exception("target and/or name have to be provided")
     if name and not typecheck.is_string(name):
-      raise TypeError()
-    self.target = TargetProxy(target or name)
-    self.name = name or self.target.__name__
-    self.description = None
-    self.address = self.locate()
-    self._dependencies = []
+      raise TypeError("name has to be a string: %s,%s" % (name, target))
+    self._target = target
+    if not name:
+      if typecheck.is_string(target):
+        name = target
+      elif typecheck.is_class(target) or typecheck.is_function(target):
+        name = target.__name__
+      else:
+        name = "i%d" % id(target)
+    self._name = name
+    self._description = None
+    self._address = None
+    self._address = self.locate()
+    self._dependencies = [] # TODO: deprecated
     self._properties = dict()
+    self._build_dir = None
+    # TODO: test on windows and other systems!
+    self.set_build_dir(path_utils.join(bb.user_config.get("b3", "builddir"),
+                                       os.getcwd()[1:]))
     if hasattr(self.__class__, "properties"):
       self.add_properties(self.__class__.properties)
     register_rule(self)
+    if execute:
+      if not callable(execute):
+        raise TypeError()
+      self.execute = types.MethodType(execute, self)
     # Defer dependency resolution after parsing the current BUILD file to
     # allow for forward references
     self._post_init(self._finalize_deps, deps)
 
   def __eq__(self, other):
     result = other and (type(self) == type(other)) and \
-        (self.address == other.address)
+        (self.get_address() == other.get_address())
     return result
 
   def __hash__(self):
-    return hash(self.address)
+    return hash(self.get_address())
 
   def __repr__(self):
-    return "%s(%s)" % (type(self).__name__, self.address)
+    return "%s(%s)" % (type(self).__name__, self.get_address())
+
+  def locate(self):
+    context = Context.locate()
+    return Address(context.buildfile, self.get_name())
+
+  def get_address(self):
+    return self._address
+
+  def set_build_dir(self, path):
+    if not typecheck.is_string(path):
+      raise TypeError()
+    self._build_dir = path
+
+  def get_build_dir(self):
+    return self._build_dir
+
+  def buildpath(self, path, recursive=True):
+    """Path will be created if it doesn't exist."""
+    if typecheck.is_list(path):
+      path = path_utils.join(*path)
+    elif not typecheck.is_string(path):
+      raise TypeError("path can be only a string or list")
+    path = path_utils.join(self.get_build_dir(), path)
+    if path_utils.exists(path):
+      return path
+    return path_utils.touch(path, recursive=recursive)
 
   def _post_init(self, func, *args, **kwargs):
     """Registers a command `func` to invoke after this rule's BUILD file is
@@ -378,15 +473,17 @@ class Rule(object):
                 additional_rule._walk_deps(walked, work, predicate)
 
   def get_target(self):
-    return self.target
+    return self._target
 
   def set_description(self, description):
-    self.description = description
+    if not typecheck.is_string(description):
+      raise TypeError()
+    self._description = description
     return self
 
   def get_name(self):
     """Returns the name of this target."""
-    return self.name
+    return self._name
 
   def add_properties(self, properties):
     for property_ in properties:
@@ -478,16 +575,10 @@ class Rule(object):
 
   def get_dependencies(self):
     """Returns list of dependencies of this target."""
-    # TODO: I think we do not have to keep dependencies and need to take
-    # dependencies from the graph: dependency_graph.successors(self)
-    return self._dependencies
+    return dependency_graph.successors(self)
 
   def _finalize_deps(self, deps=[]):
     self.add_dependencies(deps)
-
-  def locate(self):
-    context = Context.locate()
-    return Address(context.buildfile, self.name)
 
   def walk_deps(self, work, predicate=None):
     """Performs a walk of this rule's dependency graph visiting each node
@@ -537,8 +628,6 @@ class Context(object):
   """Defines the content of a parseable BUILD file rule and provides a
   mechanism for rules to discover their content when invoked via eval.
   """
-
-  PANTS_NEW = False
 
   _active = collections.deque([])
 
@@ -609,9 +698,6 @@ class Context(object):
             eval_globals.update({
               'ROOT_DIR': buildfile.root_dir,
               '__file__': buildfile.full_path,
-              # TODO(John Sirois): kill PANTS_NEW and its usages when pants.new
-              # is rolled out
-              'PANTS_NEW': Context.PANTS_NEW
             })
             eval_globals.update(globalargs)
             python.Compatibility.exec_function(buildfile.code(), eval_globals)
@@ -653,7 +739,6 @@ class BuildFile(object):
     self.parent_path = os.path.dirname(self.full_path)
     self._bytecode_path = os.path.join(self.parent_path, '.%s.%s.pyc' %
                                        (self.name, python.PythonIdentity.get()))
-
     self.relpath = os.path.relpath(self.full_path, self.root_dir)
     self.canonical_relpath = os.path.join(os.path.dirname(self.relpath),
                                           BuildFile._CANONICAL_NAME)
