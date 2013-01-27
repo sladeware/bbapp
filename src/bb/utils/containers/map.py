@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-#
-# http://bionicbunny.org/
+# http://www.bionicbunny.org/
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+#
+# Author: Oleksandr Sviridenko
 
 import collections
+
+__all__ = ["dotdict", "DictWrapper"]
+
+class dotdict(dict):
+  """Provides dot notation over bracket notation for dictionary access. Returns
+  None instead of raising an exception if key is undefied.
+  """
+
+  def __getattr__(self, attr):
+    return self.get(attr, None)
+
+  __setattr__= dict.__setitem__
+  __delattr__= dict.__delitem__
 
 class DictWrapper(collections.MutableMapping):
   """This class simulates a dictionary. The instance's contents are kept in a
