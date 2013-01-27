@@ -1,4 +1,5 @@
 # http://www.bionicbunny.org/
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,28 +21,15 @@ etc. and other hardware primitives such as notes.
 
 from bb.utils import typecheck
 
-__all__ = ["Primitive", "Property", "ElectronicPrimitive", "Pin", "Wire",
-           "Bus", "Note"]
+__all__ = ["Primitive", "ElectronicPrimitive", "Pin", "Wire", "Bus", "Note"]
 
-class Property(object):
-  """This class represents property of a primitive. Each property consists of
-  `name` and `value`.
-  """
-  def __init__(self, name, value=None):
-    self._name = name
-    self._value = value
+class Properties(dict):
 
-  @property
-  def name(self):
-    return self._name
+  def __getattr__(self, attr):
+    return self[attr]
 
-  @property
-  def value(self):
-    return self._value
-
-  @value.setter
-  def value(self, new_value):
-    self._value = new_value
+  def __setattr__(self, attr, value):
+    self[attr] = value
 
 class Primitive(object):
   """This class is basic for any primitive.
@@ -53,33 +41,32 @@ class Primitive(object):
   :func:`generate_designator`. However it can be changed manually by using
   :func:`set_designator` method.
 
-  A primitive may also have properties where each property is represented by
-  :class:`Primitive.Property`. For example, if you would like to add weight of
-  your primitive ``primitive``, you can do this as follows::
+  A primitive may also have properties where each property is represented by a
+  tuple (name, value). For example, if you would like to add weight of your
+  primitive ``primitive``, you can do this as follows::
 
-    primitive.add_property(Primitive.Property("weight", 87))
+    primitive.properties.weight = 87
 
   Now people will be able to define the weight of the primitive::
 
-    print primitive.get_primitive("weight").value
+    print primitive.properties.weight
+    # or primitive.properties["weight"]
   """
 
-  DESIGNATOR_FORMAT="P%d"
+  DESIGNATOR_FORMAT = "P%d"
   """This designator format will be used by all the primitives that will inherit
   this class. By default primitives will have such designators: ``P0``, ``P1``,
   ..., etc. The format can be changed later by using
   :func:`set_designator_format` method.
   """
 
-  properties = ()
+  default_properties = ()
   """Dictionary of default properties used by all the primitives that will
   inherit this class.
   """
 
-  Property = Property
-
   def __init__(self, designator=None, designator_format=None):
-    self._properties = dict()
+    self._properties = Properties()
     self._id = id(self)
     self._designator_format = None
     self._designator = None
@@ -91,8 +78,8 @@ class Primitive(object):
       self.set_designator(designator)
     else:
       self.generate_designator()
-    if getattr(self.__class__, "properties", None):
-      self.add_properties(self.__class__.properties)
+    if getattr(self.__class__, "default_properties", None):
+      self.add_properties(self.__class__.default_properties)
 
   def clone(self):
     """Creates and returns a copy of this object. The default implementation
@@ -105,6 +92,8 @@ class Primitive(object):
     for k, v in self.__dict__.iteritems():
       setattr(clone, k, v)
     return clone
+
+  #designator
 
   def get_designator_format(self):
     """Defines the format string to be used with the part designator. A
@@ -166,60 +155,50 @@ class Primitive(object):
   def id(self):
     return self.get_id()
 
+  #properties
+
+  @property
+  def properties(self):
+    return self._properties
+
   def add_properties(self, properties):
     if not typecheck.is_sequence(properties):
-      raise TypeError("Has to be list")
+      raise TypeError("Has to be a sequence")
     for property_ in properties:
       self.add_property(property_)
 
-  def add_property(self, property_):
+  def add_property(self, *property_):
     """Add a new property for the primitive. Primitive can be described with
     help of class Property or with tuple::
 
-      primitive.add_property(Property("name", "Foo"))
+      primitive.add_property("name", "Foo")
+      # or primitive.properties.name = "Foo"
 
     or::
 
       primitive.add_properties(("name", "Foo"), ("color", "black"))
     """
-    if typecheck.is_sequence(property_):
-      property_ = Primitive.Property(*property_)
-    if not isinstance(property_, Primitive.Property):
-      raise TypeError("Not a Property or sequence")
-    self._properties[property_.name] = property_
+    name, value = None, None
+    if len(property_) == 1:
+      if not typecheck.is_sequence(property_):
+        raise TypeError()
+      property_ = property_[0]
+    if len(property_) != 2:
+      raise TypeError()
+    name, value = property_[0], property_[1]
+    self._properties[name] = value
 
-  def has_property(self, property_):
+  def has_property(self, name):
     """Return whether or not the primitive has a property `property_`. The
     `property_` can be defined as a string or instance of :class:`Property`
     class.
     """
-    property_name = property_
-    if isinstance(property_, Primitive.Property):
-      property_name = property_.name
-    return property_name in self._properties
-
-  def set_property(self, name, value):
-    property_ = self.get_property(name)
-    if property_:
-      property_.value = value
-      return property_
-    property_ = Primitive.Property(name, value)
-    self.add_property(property_)
-    return property_
+    if not typecheck.is_string(name):
+      raise TypeError()
+    return name in self._properties
 
   def get_properties(self):
-    return self._properties.values()
-
-  def get_property(self, name):
-    if not self.has_property(name):
-      return None
-    return self._properties[name]
-
-  def get_property_value(self, name, default=None):
-    property_ = self.get_property(name)
-    if not property_:
-      return default
-    return self.get_property(name).value
+    return self._properties
 
   def __str__(self):
     """Returns a string containing a concise, human-readable

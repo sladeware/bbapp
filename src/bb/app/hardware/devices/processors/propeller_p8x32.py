@@ -1,5 +1,5 @@
 # http://www.bionicbunny.org/
-# Copyright (c) 2013 Sladeware LLC
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,7 +55,8 @@ class PropellerP8X32A(Processor):
   """
 
   core_class = PropellerCog
-  properties = (("name", "Propeller P8X32A"),)
+  default_properties = (("name", "Propeller P8X32A"),
+                        ("family", "propeller_p8x32"))
 
   def __init__(self):
     cores = list()
@@ -73,4 +74,4 @@ class PropellerP8X32A_Q44(PropellerP8X32A):
   """The P8X32A-Q44 is most useful for prototyping in its 44-pin QFP package.
   """
 
-  properties = (("name", "Propeller P8X32A-Q44"),)
+  default_properties = (("name", "Propeller P8X32A-Q44"),)
