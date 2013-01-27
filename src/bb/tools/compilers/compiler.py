@@ -1,3 +1,4 @@
+# http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +24,8 @@ from bb.utils import path_utils
 
 logger = logging.get_logger("bb")
 
-class Compiler(executable.ExecutableWrapper, executable.ParamsReaderInterface):
+# TODO: add sources. When compile() is calling, translate sources to files.
+class Compiler(executable.ExecutableWrapper):
   """The base compiler class."""
 
   default_output_filename = None

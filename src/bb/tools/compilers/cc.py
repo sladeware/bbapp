@@ -1,3 +1,6 @@
+# -*- coding: utf-8; -*-
+#
+# http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Author: "Oleksandr Sviridenko"
+# Author: Oleksandr Sviridenko
 
 from bb.tools.compilers.custom_c_compiler import CustomCCompiler, Linker
 from bb.utils import spawn
@@ -40,8 +43,8 @@ class CC(CustomCCompiler):
     compiles ``.c`` to ``.o``
   """
 
-  SOURCE_EXTENSIONS = [".c", ".C", ".cc", ".cxx", ".cpp"]
-  OBJECT_EXTENSION = ".o"
+  source_extensions = [".c", ".C", ".cc", ".cxx", ".cpp"]
+  object_extension = ".o"
   executable = "cc"
 
   def __init__(self, verbose=None, dry_run=False):

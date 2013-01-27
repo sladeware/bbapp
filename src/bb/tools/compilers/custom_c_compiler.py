@@ -1,3 +1,4 @@
+# http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,10 +24,10 @@ import sys
 import time
 
 import bb
+from bb.tools.compilers.compiler import Compiler
 from bb.utils import path_utils
 from bb.utils import typecheck
 from bb.utils import logging
-from bb.tools.compilers.compiler import Compiler
 from bb.utils import executable
 
 logger = logging.get_logger("bb")
@@ -89,8 +90,8 @@ class CustomCCompiler(Compiler):
   """
 
   default_output_filename = "a.out"
-  SOURCE_EXTENSIONS = None
-  OBJECT_EXTENSION = None
+  source_extensions = None
+  object_extension = None
 
   def __init__(self, verbose=0, dry_run=False):
     Compiler.__init__(self, verbose, dry_run)
@@ -98,10 +99,10 @@ class CustomCCompiler(Compiler):
     self._output_file = None
     # A list of macro definitions (we are using list since the order is
     # important). A macro definition is a 2-tuple (name, value), where the value
-    # is either a string or None. A macro undefinition is a 1-tuple (name, ).
+    # is either a string or None. A macro undefinition is a 1-tuple (name,).
     self.macros = list()
     # A list of directories
-    self.include_dirs = list()
+    self._include_dirs = list()
     # A list of library names (not filenames: eg. "foo" not "libfoo.a")
     # to include in any link
     self.libraries = list()
@@ -110,13 +111,12 @@ class CustomCCompiler(Compiler):
     # A list of object files
     self.objects = list()
     self._object_extension = None
-    self.set_object_extension(self.OBJECT_EXTENSION)
+    self.set_object_extension(self.object_extension)
     self._source_extensions = list()
-    self.set_source_extensions(self.SOURCE_EXTENSIONS)
+    self.set_source_extensions(self.source_extensions)
     self._extra_preopts = list()
     self._extra_postopts = list()
     self._linker = None
-    #self.add_include_dir(path_utils.absjoin(os.environ['BB_PKG_DIR'], ".."))
 
   def set_output_dir(self, path):
     if not typecheck.is_string(path):
@@ -188,7 +188,6 @@ class CustomCCompiler(Compiler):
       i += 1
     return None
 
-  @executable.param_handler("include_dirs")
   def add_include_dirs(self, pathes):
     """Add a list of dirs 'pathes' to the list of directories that will be
     searched for header files. See :func:`CCompiler.add_include_dir`.
@@ -199,16 +198,16 @@ class CustomCCompiler(Compiler):
       self.add_include_dir(path)
 
   def add_include_dir(self, path):
-    """Add `dir` to the list of directories that will be searched for header
+    """Add `path` to the list of directories that will be searched for header
     files. The compiler is instructed to search directories in the order in
-    which they are supplied by successive calls to 'add_include_dir()'.
+    which they are supplied by successive calls to :func:`add_include_dir()`.
     """
     if not typecheck.is_string(path):
       raise TypeError()
-    self.include_dirs.append(path)
+    self._include_dirs.append(path)
 
   def get_include_dirs(self):
-    return self.include_dirs
+    return self._include_dirs
 
   def add_library(self, library_name):
     """Add `library_name` to the list of libraries that will be included in all
@@ -218,9 +217,9 @@ class CustomCCompiler(Compiler):
     the compiler class (depending on the platform).
 
     The linker will be instructed to link against libraries in the order they
-    were supplied to 'add_library()' and/or 'set_libraries()'. It is perfectly
-    valid to duplicate library names; the linker will be instructed to link
-    against libraries as many times as they are mentioned.
+    were supplied to :func:`add_library` and/or :func:`set_libraries`. It is
+    perfectly valid to duplicate library names; the linker will be instructed to
+    link against libraries as many times as they are mentioned.
     """
     self.libraries.append(library_name)
 
@@ -236,23 +235,22 @@ class CustomCCompiler(Compiler):
     """Add `library_dir` to the list of directories that will be searched for
     libraries specified to :func:`CCompiler.add_library` and
     :func:`CCompiler.set_libraries`. The linker will be instructed to search for
-    libraries in the order they are supplied to 'add_library_dir()' and/or
-    'set_library_dirs()'."""
+    libraries in the order they are supplied to :func:`add_library_dir` and/or
+    :func:`set_library_dirs`.
+    """
     self.library_dirs.append(library_dir)
 
-  def add_library_dirs(self, library_dirs):
-    if library_dirs and typecheck.is_sequence(library_dirc):
-      for library_dir in list(library_dirs):
+  def add_library_dirs(self, dirs):
+    if dirs and typecheck.is_sequence(dirc):
+      for library_dir in list(dirs):
         self.add_library_dir(library_dir)
     else:
-      raise TypeError("'library_dirs' (if supplied) must be a list of "
-                      + "strings")
+      raise TypeError("'dirs' (if supplied) must be a list of strings")
 
   def add_link_object(self, obj):
-    """Add `obj` to the list of object files (or analogues, such as
-    explicitly named library files or the output of "resource
-    compilers") to be included in every link driven by this compiler
-    object.
+    """Add `obj` to the list of object files (or analogues, such as explicitly
+    named library files or the output of "resource compilers") to be included in
+    every link driven by this compiler object.
     """
     self.objects.append(obj)
 
@@ -264,11 +262,11 @@ class CustomCCompiler(Compiler):
       self.add_link_object(obj)
 
   def define_macro(self, name, value=None):
-    """Define a preprocessor macro for all compilations driven by this
-    compiler object. The optional parameter `value` should be a
-    string; if it is not supplied, then the macro will be defined
-    without an explicit value and the exact outcome depends on the
-    compiler used (XXX true? does ANSI say anything about this?)
+    """Define a preprocessor macro for all compilations driven by this compiler
+    object. The optional parameter `value` should be a string; if it is not
+    supplied, then the macro will be defined without an explicit value and the
+    exact outcome depends on the compiler used (XXX true? does ANSI say anything
+    about this?)
     """
     # Delete from the list of macro definitions/undefinitions if
     # already there (so that this one will take precedence).
@@ -289,8 +287,8 @@ class CustomCCompiler(Compiler):
 
   def identify_language(self, sources):
     """Identify the language of a given file, or list of files. Uses
-    language_map, and :func:`CCompiler.get_language_precedence_order`
-    to do the job.
+    language_map, and :func:`CCompiler.get_language_precedence_order` to do the
+    job.
     """
     if not typecheck.is_list(sources):
       sources = [sources]
@@ -309,41 +307,40 @@ class CustomCCompiler(Compiler):
     return lang
 
   def get_library_dir_option(self, dir):
-    """Return the compiler option to add 'dir' to the list of
-    directories searched for libraries.
+    """Return the compiler option to add 'dir' to the list of directories
+    searched for libraries.
     """
     raise NotImplemented
 
   def get_library_option(self, lib):
-    """Return the compiler option to add 'dir' to the list of libraries
-    linked into the shared library or executable.
+    """Return the compiler option to add 'dir' to the list of libraries linked
+    into the shared library or executable.
     """
     raise NotImplementedError
 
   def find_library_file (self, dirs, lib, debug=0):
-    """Search the specified list of directories for a static or shared
-    library file `lib` and return the full path to that file. If
-    `debug` true, look for a debugging version (if that makes sense on
-    the current platform). Return ``None`` if `lib` wasn't found in any of
-    the specified directories.
+    """Search the specified list of directories for a static or shared library
+    file `lib` and return the full path to that file. If `debug` true, look for
+    a debugging version (if that makes sense on the current platform). Return
+    ``None`` if `lib` wasn't found in any of the specified directories.
     """
     raise NotImplementedError
 
   def _gen_lib_options(self, library_dirs, libraries):
-    """Generate linker options for searching library directories and
-    linking with specific libraries.  'libraries' and 'library_dirs' are,
-    respectively, lists of library names (not filenames!) and search
-    directories.  Returns a list of command-line options suitable for use
-    with some compiler (depending on the two format strings passed in).
+    """Generate linker options for searching library directories and linking
+    with specific libraries. 'libraries' and 'library_dirs' are, respectively,
+    lists of library names (not filenames!) and search directories. Returns a
+    list of command-line options suitable for use with some compiler (depending
+    on the two format strings passed in).
     """
     lib_options = []
     for dir in library_dirs:
       lib_options.append(self.get_library_dir_option(dir))
     # XXX it's important that we *not* remove redundant library mentions!
     # sometimes you really do have to say "-lfoo -lbar -lfoo" in order to
-    # resolve all symbols.  I just hope we never have to say "-lfoo obj.o
-    # -lbar" to get things to work -- that's certainly a possibility, but a
-    # pretty nasty way to arrange your C code.
+    # resolve all symbols.  I just hope we never have to say "-lfoo obj.o -lbar"
+    # to get things to work -- that's certainly a possibility, but a pretty
+    # nasty way to arrange your C code.
     for lib in libraries:
       (lib_dir, lib_name) = os.path.split(lib)
       if lib_dir:
@@ -358,9 +355,9 @@ class CustomCCompiler(Compiler):
     return lib_options
 
   def _gen_preprocess_macro_options(self, macros):
-    """macros is the usual thing, a list of 1- or 2-tuples, where (name,)
-    means undefine (-U) macro 'name', and (name, value) means define (-D)
-    macro 'name' to 'value'.
+    """Macros is the usual thing, a list of 1- or 2-tuples, where (name,) means
+    undefine (-U) macro 'name', and (name, value) means define (-D) macro 'name'
+    to 'value'.
     """
     options = []
     for macro in macros:
@@ -380,8 +377,8 @@ class CustomCCompiler(Compiler):
     return options
 
   def _gen_preprocess_include_options(self, include_dirs):
-    """include_dirs is just a list of directory names to be added to the
-    header file search path (-I).
+    """include_dirs is just a list of directory names to be added to the header
+    file search path (-I).
     """
     options = []
     for include_dir in include_dirs:
@@ -392,9 +389,8 @@ class CustomCCompiler(Compiler):
 
   def _gen_preprocess_options(self, macros, include_dirs):
     """Generate C pre-processor options(-D, -U, -I) as used by at least two
-    types of compilers: the typical Unix compiler and Visual C++. Return
-    a list of command-line options suitable for either Unix compilers and
-    Visual C++.
+    types of compilers: the typical Unix compiler and Visual C++. Returns a list
+    of command-line options suitable for either Unix compilers and Visual C++.
     """
     pp_options = self._gen_preprocess_macro_options(macros) \
         + self._gen_preprocess_include_options(include_dirs)
@@ -442,8 +438,8 @@ class CustomCCompiler(Compiler):
     return self._extra_postopts
 
   def compile(self, files=[], output_file=None, macros=None,
-              include_dirs=None, debug=False, extra_preopts=None,
-              extra_postopts=None, depends=None, link=True):
+              include_dirs=[], debug=False, extra_preopts=None,
+              extra_postopts=[], depends=None, link=True):
     if not typecheck.is_list(files):
       raise TypeError("'sources' must be a list")
     files = files + self.get_files()
@@ -453,6 +449,7 @@ class CustomCCompiler(Compiler):
     # Setup compilation process first
     if output_file:
       self.set_output_file(output_file)
+    include_dirs = set(include_dirs).update(set(self.get_include_dirs()))
     macros, objects, extra_postopts, pp_options, build = \
         self._setup_compile(files, macros, include_dirs, extra_postopts, depends)
     cc_options = self._gen_cc_options(pp_options, debug, extra_preopts)
@@ -490,9 +487,9 @@ class CustomCCompiler(Compiler):
     else:
       raise TypeError("'macros' (if supplied) must be a list of tuples")
     if include_dirs is None:
-      include_dirs = self.include_dirs
+      include_dirs = self._include_dirs
     elif typecheck.is_sequence(include_dirs):
-      include_dirs = list(include_dirs) + (self.include_dirs or [])
+      include_dirs = list(include_dirs) + (self._include_dirs or [])
     else:
       raise TypeError("'include_dirs' (if supplied) must be a list of strings")
     if extra is None:
@@ -527,9 +524,9 @@ class CustomCCompiler(Compiler):
 
   def _setup_link(self, objects, output_dir, libraries, library_dirs):
     """Typecheck and fix up some of the arguments supplied to the class of link
-    methods.  Specifically: ensure that all arguments are lists, and augment
-    them with their permanent versions (eg. 'self.libraries' augments
-    'libraries'). Return a tuple with fixed versions of all arguments.
+    methods. Specifically: ensure that all arguments are lists, and augment them
+    with their permanent versions (eg. 'self.libraries' augments
+    'libraries'). Returns a tuple with fixed versions of all arguments.
     """
     if not typecheck.is_sequence(objects):
       raise TypeError("'objects' must be a list or tuple of strings")
