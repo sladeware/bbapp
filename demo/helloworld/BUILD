@@ -1,4 +1,4 @@
-# -*- mode: python; encoding: utf-8 -*-
+# -*- encoding: utf-8; mode: python; -*-
 #
 # Copyright (c) 2013 Sladeware LLC
 # http://www.bionicbunny.org/
@@ -14,8 +14,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Author: Oleksandr Sviridenko <info@bionicbunny.org>
 
 fileset(name = "helloworld_files",
         srcs = ["helloworld.c"])
@@ -27,6 +25,6 @@ propeller_binary(name = "helloworld-propeller",
                  srcs = [":helloworld_files"])
 
 propeller_load(name = "helloworld-propeller-load",
+               binary = "helloworld-propeller",
                port = "/dev/ttyUSB0",
-               deps = [":helloworld-propeller"],
-               binary = "helloworld-propeller")
+               deps = [":helloworld-propeller"])
