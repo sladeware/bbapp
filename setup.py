@@ -34,8 +34,9 @@ def main():
         classifiers = ["License :: OSI Approved :: Apache Software License",
                        "Development Status :: 2 - Pre-Alpha",
                        "Operating System :: BBOS"],
-        install_requires = ["networkx",
-                            "django"],
+        install_requires = ["django",
+                            "networkx",
+                            "pyserial"],
         test_suite = "test.make_testsuite",)
 
 if __name__ == "__main__":
