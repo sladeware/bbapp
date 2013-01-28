@@ -35,6 +35,7 @@ def main():
                        "Development Status :: 2 - Pre-Alpha",
                        "Operating System :: BBOS"],
         install_requires = ["django",
+                            "distribute>=0.6.24",
                             "networkx",
                             "pyserial"],
         test_suite = "test.make_testsuite",)
