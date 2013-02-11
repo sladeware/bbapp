@@ -1,10 +1,12 @@
+# -*- coding: utf-8; -*-
+#
 # http://www.bionicbunny.org/
 # Copyright (c) 2013 Sladeware LLC
 
 import os
 import traceback
 
-import bb
+import bb.config
 from .command import Command
 from bb.tools.b3 import buildfile
 from bb.utils import path_utils
@@ -14,7 +16,7 @@ DEFAULT_TARGET = ":all"
 class Build(Command):
   """This class represents build command:
 
-  $ b3 build [target]
+  $ b3 build [:target]
   """
 
   def __init__(self, root_dir, parser, argv):
@@ -24,10 +26,11 @@ class Build(Command):
     self.rules = []
     addresses = []
     # TODO: the following injection has to be fixed
-    bbos_src = path_utils.join(bb.user_config.get("bbos", "location"),
-                               "src", "main")
-    bbos_buildfile = buildfile.BuildFile(bbos_src, ".")
-    buildfile.Context(bbos_buildfile).parse()
+    if os.path.exists(bb.config.user_settings.get("bbos", "homedir")):
+      bbos_src = path_utils.join(bb.config.user_settings.get("bbos", "homedir"),
+                                 "src", "main")
+      bbos_buildfile = buildfile.BuildFile(bbos_src, ".")
+      buildfile.Context(bbos_buildfile).parse()
     #
     for target in self.args[0:]:
       try:
