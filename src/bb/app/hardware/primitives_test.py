@@ -27,6 +27,6 @@ class PrimitivesTest(unittest.TestCase):
 
   def test_primitive_properties(self):
     p0 = primitives.Primitive()
-    p0.set_property("weight", 10)
+    p0.properties["weight"] = 10
     self.assert_equal(len(p0.get_properties()), 1)
-    self.assert_equal(p0.get_property("weight").value, 10)
+    self.assert_equal(p0.properties["weight"], 10)
