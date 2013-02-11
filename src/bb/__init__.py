@@ -3,10 +3,8 @@
 #
 # Author: Oleksandr Sviridenko
 
-from bb import app
-from bb import config
-
 __copyright__ = "Copyright (c) 2013 Sladeware LLC"
+__version__ = "0.0a1"
 
-bbapp = app
-user_config = config.get_user_config()
+# NOTE: we do not load any bb dependencies to keep the root clean and reusable
+# for setup.py

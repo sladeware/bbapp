@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# -*- coding: utf-8; -*-
 #
 # Copyright (c) 2012-2013 Sladeware LLC
 #
@@ -27,3 +27,6 @@ you're on your own -- edit __init__.py if you want to try it.
 """
 
 from bb.config.config import *
+from bb.config.user_config import *
+
+user_settings = read_user_settings()

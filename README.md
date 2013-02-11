@@ -39,7 +39,11 @@ Installation
 
         $ python setup.py install
 
-   All the modules will be installed automatically if required.
+   All the modules will be installed automatically if required. The installation
+   process with generate default config file `~/.bbconfig`. In case you would
+   like to refresh it and does not want to reinstall the package, run:
+
+        $ python -m bb.config
 
 > **NOTE:** Developers may use ["development mode"](http://goo.gl/Hoawa) to skip
 > direct installation process: `$ python setup.py develop`. Once the work has

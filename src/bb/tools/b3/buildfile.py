@@ -20,7 +20,7 @@ from glob import glob1
 from contextlib import contextmanager
 import networkx
 
-import bb
+import bb.config
 import bb.object
 from bb.utils import path_utils
 from bb.utils import logging
@@ -403,8 +403,8 @@ class Rule(Primitive):
     self._properties = dict()
     self._build_dir = None
     # TODO: test on windows and other systems!
-    self.set_build_dir(path_utils.join(bb.user_config.get("b3", "builddir"),
-                                       os.getcwd()[1:]))
+    self.set_build_dir(path_utils.join(
+        bb.config.user_settings.get("b3", "builddir"), os.getcwd()[1:]))
     if hasattr(self.__class__, "properties"):
       self.add_properties(self.__class__.properties)
     register_rule(self)

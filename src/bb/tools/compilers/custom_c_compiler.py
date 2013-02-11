@@ -23,7 +23,7 @@ import os.path
 import sys
 import time
 
-import bb
+import bb.config
 from bb.tools.compilers.compiler import Compiler
 from bb.utils import path_utils
 from bb.utils import typecheck
@@ -126,7 +126,7 @@ class CustomCCompiler(Compiler):
   def get_output_dir(self):
     if self._output_dir:
       return self._output_dir
-    return bb.user_config.get("b3", "builddir")
+    return bb.config.user_settings.get("b3", "builddir")
 
   def get_default_ccompiler(osname=None, platform=None):
     """Determine the default compiler to use for the given `platform`.
