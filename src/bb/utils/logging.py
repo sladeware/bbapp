@@ -15,8 +15,13 @@ except ImportError:
 
 get_logger = getLogger
 
+# NOTE: full-size format: %(levelname) 7s
+_LOG_FORMAT = "[%(levelname).1s] %(message)s"
+basicConfig(level=DEBUG, format=_LOG_FORMAT)
+captureWarnings(True)
+
 # Ensure the creation of the bb logger with a null handler. This ensures we
 # don't get any 'No handlers could be found for logger "bb"' messages
 logger = get_logger("bb")
 if not logger.handlers:
-    logger.addHandler(NullHandler())
+  logger.addHandler(NullHandler())
