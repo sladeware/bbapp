@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8; -*-
 #
 # http://www.bionicbunny.org/
 # Copyright (c) 2013 Sladeware LLC

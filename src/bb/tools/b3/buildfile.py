@@ -509,7 +509,7 @@ class Rule(Primitive):
 
   def resolve(self):
     for dep in self.get_dependencies():
-      dep.resolve()
+      #dep.resolve()
       dep.execute()
 
   def get_dependency_graph(self):
