@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+# -*- coding: utf-8; -*-
 #
-# http://bionicbunny.org/
+# http://www.bionicbunny.org/
+# Copyright (c) 2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +16,6 @@
 # limitations under the License.
 
 """This module provides set of type cheching utils."""
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
 
 import inspect
 import types
@@ -38,8 +36,6 @@ def is_boolean(obj):
   """Returns ``True`` if the specified object is boolean."""
   return type(obj) is types.BooleanType
 
-is_bool = is_boolean
-
 def is_string(obj):
   """Returns ``True`` if the specified object is a string."""
   return type(obj) is types.StringType
@@ -51,8 +47,6 @@ def is_list(obj):
 def is_function(obj):
   """Returns ``True`` if object is a function."""
   return type(obj) is types.FunctionType
-
-is_callable = callable
 
 def is_tuple(obj):
   """Returns ``True`` if object is a tuple."""
@@ -70,24 +64,7 @@ def is_sequence(x):
   """Is `x` a sequence? We say it is if it has a ``__getitem__`` method."""
   return hasattr(x, "__getitem__")
 
-def accepts(*types):
-  def check_accepts(f):
-    assert len(types) == f.func_code.co_argcount
-    def new_f(*args, **kwds):
-      for (a, t) in zip(args, types):
-        assert isinstance(a, t), "arg %r does not match %s" % (a,t)
-      return f(*args, **kwds)
-    new_f.func_name = f.func_name
-    return new_f
-  return check_accepts
-
-def returns(rtype):
-  def check_returns(f):
-    def new_f(*args, **kwds):
-      result = f(*args, **kwds)
-      assert isinstance(result, rtype), \
-          "return value %r does not match %s" % (result,rtype)
-      return result
-    new_f.func_name = f.func_name
-    return new_f
-  return check_returns
+# Aliases
+is_bool = is_boolean
+is_callable = callable
+is_func = is_function

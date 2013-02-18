@@ -1,3 +1,5 @@
+# -*- coding: utf-8; -*-
+#
 # http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
@@ -104,6 +106,9 @@ class Mapping(object):
            self._thread_distributor and \
              self._thread_distributor.__class__.__name__ or None)
 
+  def __build__(self):
+    return self.gen_os()
+
   def __call__(self, *args, **kwargs):
     """The mapping instance call eq to gen_os()."""
     return self.gen_os(*args, **kwargs)
@@ -202,15 +207,16 @@ class Mapping(object):
     instance.
     """
     if not issubclass(os_class, OS):
-      raise TypeError("Must be derived from bb.app.os.OS class: %s" % os_class)
+      raise TypeError("Must be derived from bb.app.meta_os.OS class: %s"
+                      % os_class)
     self._os_class = os_class
 
   def get_os_class(self):
     return self._os_class
 
   def gen_os(self):
-    """Generates OS based on mapping analysis. Returns :class:`bb.app.os.os.OS`
-    based instance.
+    """Generates OS based on mapping analysis. Returns
+    :class:`bb.app.meta_os.meta_os.OS` based instance.
     """
     logger.info("Process mapping %s" % self.get_name())
     processor = self.get_processor()
