@@ -308,18 +308,21 @@ class RuleWithSources(object):
     if (isinstance(source, object) and not typecheck.is_function(source) and \
           not typecheck.is_string(source)) or \
           (typecheck.is_string(source) and source.startswith(":")):
+      # First of all check for attribute "__build__" and call it to resolve
+      # dependencies.
+      if hasattr(source, "__build__"):
+        self._add_callable_source(source.__build__)
+      elif callable(source):
+        self._add_callable_source(source.__call__)
       rule = parse_address(source)
       if rule:
         if source not in self.get_dependencies(): self.add_dependency(rule)
         source = rule
-      else:
-        if callable(source):
-          self._add_callable_source(source.__call__)
-          return
-        logger.warning("Cannot find appropriate rule for the source: %s" %
-                       source)
+      #else:
+      #  logger.warning("Cannot find appropriate rule for the source: %s" %
+      #                 source)
     # Source is a function or something that we should call. The result is
-    # assumed to be an extra sources that will be added with add_sources().
+    # assumed to be an extra sources that will be added by add_sources().
     elif callable(source):
       self._add_callable_source(source)
       return

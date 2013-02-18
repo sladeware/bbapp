@@ -1,3 +1,5 @@
+# -*- coding: utf-8; -*-
+#
 # http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
@@ -18,6 +20,8 @@
 """The Bionic Bunny Operating System is one or more microkernel for
 microprocessors.
 """
+
+from __future__ import print_function
 
 from kernel import Kernel
 from drivers import Driver
@@ -51,6 +55,10 @@ class OS(object):
          self._processor and self._processor.__class__.__name__ or None,
          self.get_num_kernels())
 
+  def __build__(self):
+    """Helps b3 to build MetaOS object. Returns required dependencies."""
+    return [self.get_processor()]
+
   def _set_processor(self, processor):
     if not isinstance(processor, Processor):
       raise Exception('processor must be derived from Processor class.')
@@ -58,17 +66,17 @@ class OS(object):
 
   def dump(self):
     """Prints meta os state."""
-    print "Meta OS"
-    print "processor: %s" % self.get_processor()
-    print "%d thread(s)%s" % (self.get_num_threads(),
-                                self.get_num_threads and ":" or "")
+    print("Meta OS")
+    print("processor: %s" % self.get_processor())
+    print("%d thread(s)%s"
+          % (self.get_num_threads(), self.get_num_threads and ":" or ""))
     for i, thread in enumerate(self.get_threads()):
-      print "  %d. %s" % (i, str(thread))
-    print "%d message(s)%s" % (self.get_num_messages(),
-                                       self.get_num_messages() and ":" or "")
+      print("  %d. %s" % (i, str(thread)))
+    print("%d message(s)%s"
+          % (self.get_num_messages(), self.get_num_messages() and ":" or ""))
     for i, message in enumerate(self.get_messages()):
-      print "  %d. %s" % (i ,str(message))
-    print "max message size: %s byte(s)" % self.get_max_message_size()
+      print("  %d. %s" % (i ,str(message)))
+    print("max message size: %s byte(s)" % self.get_max_message_size())
 
   def _set_max_message_size(self, max_size=0):
     size = 0
