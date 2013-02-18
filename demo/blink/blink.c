@@ -1,7 +1,11 @@
 #include <propeller.h>
 
-int
-main()
+void
+blinker_runner()
 {
-  return 0;
+}
+
+void
+buttons_runner()
+{
 }
