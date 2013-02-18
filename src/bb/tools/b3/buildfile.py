@@ -47,12 +47,14 @@ class DependencyGraph(networkx.DiGraph):
     for fork in forks:
       for parent in self.predecessors(fork):
         parent_lang = parent.get_property_value("programming_language")
+        remove_edge = False
         for child in self.successors(fork):
           child_lang = child.get_property_value("programming_language")
           if not child_lang or parent_lang == child_lang:
-            self.remove_edge(parent, fork)
             self.add_edge(parent, child)
-            break
+            remove_edge = True
+        if remove_edge:
+          self.remove_edge(parent, fork)
 
   def save(self, filepath='dependency_graph.png'):
     import matplotlib.pyplot as plt
