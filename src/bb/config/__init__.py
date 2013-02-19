@@ -16,17 +16,22 @@
 #
 # Author: Oleksandr Sviridenko
 
+from __future__ import print_function
+
 import sys
 
-# Compatibility with Python 2.5 through 2.7.
-assert (2, 5) <= sys.version_info < (3, ), """\
-This code is meant for
-Python 2.5 through 2.7. You might find that the parts you care about
-still work in older Pythons or happen to work in newer ones, but
-you're on your own -- edit __init__.py if you want to try it.
+assert (2, 7) <= sys.version_info < (3, ), """\
+This code is meant for Python
+2.5 through 2.7. You might find that the parts you care about still work in
+older Pythons or happen to work in newer ones, but you're on your own -- edit
+__init__.py if you want to try it.
 """
 
 from bb.config.config import *
 from bb.config.user_config import *
 
-user_settings = read_user_settings()
+try:
+  user_settings = read_user_settings()
+except Exception, e:
+  print("Cannot read user settings:", e, file=sys.stderr)
+  sys.exit(0)
