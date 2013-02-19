@@ -57,12 +57,6 @@ class Compiler(executable.ExecutableWrapper):
     """
     if typecheck.is_string(path):
       if not path_utils.exists(path):
-        #if self.get_processing_params():
-        #  filename = self.get_processing_params().__file__
-        #  options_dir = path_utils.dirname(filename)
-        #  alternative_path = path_utils.join(options_dir, path)
-        #  if path_utils.exists(alternative_path):
-        #    return self.add_file(alternative_path)
         caller_frame = inspect.getouterframes(inspect.currentframe(), 2)
         filename = inspect.getsourcefile(caller_frame[2][0])
         possible_dir = path_utils.dirname(filename)
@@ -86,8 +80,7 @@ class Compiler(executable.ExecutableWrapper):
     elif not path:
       return None
     else:
-      raise TypeError("Unknown path type '%s' of '%s'" %
-                      (type(path), path))
+      raise TypeError("Unknown path type '%s' of '%s'" % (type(path), path))
 
   def get_language(self, *arg_list, **arg_dict):
     raise NotImplemented
