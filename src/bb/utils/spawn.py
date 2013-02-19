@@ -1,3 +1,5 @@
+# -*- coding: utf-8; -*-
+#
 # http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
@@ -18,7 +20,10 @@
 import os
 import sys
 import types
-import logging
+
+from bb.utils import logging
+
+logger = logging.get_logger("bb")
 
 class PlatformError(Exception):
   """Platform error."""
@@ -56,11 +61,11 @@ def spawn(cmd, search_path=True, debug=False, dry_run=False):
   debug = False
   if not type(cmd) is types.ListType:
     raise types.TypeError("'cmd' must be a list")
-  # Fix cmd first
   for i in range(len(cmd)):
     if not type(cmd[i]) is types.StringType:
       cmd[i] = str(cmd[i])
-  print " ".join(cmd)
+  if debug:
+    logger.debug(" ".join(cmd))
   if dry_run:
     return
   if os.name == "posix":
@@ -75,7 +80,6 @@ _stdout_fd = sys.stdout.fileno()
 _stderr_fd = sys.stderr.fileno()
 
 def _spawn_posix(cmd, search_path=True, debug=False):
-  debug = True
   exec_fn = search_path and os.execvp or os.execcv
   if not debug:
     child_stdin, parent_stdout = os.pipe()
