@@ -1,4 +1,7 @@
-#!/usr/bin/env python
+# -*- coding: utf-8; -*-
+#
+# Copyright (c) 2013 Sladeware LLC
+# http://www.bionicbunny.org/
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +16,6 @@
 # limitations under the License.
 
 from __future__ import absolute_import
-
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
 
 import unittest
 
