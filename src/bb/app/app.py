@@ -1,3 +1,5 @@
+# -*- coding: utf-8; -*-
+#
 # http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
@@ -28,12 +30,9 @@ state:
 """
 
 import inspect
-import imp
-import logging
 import types
 import os
 
-from bb.utils import pyimport
 from bb.utils import typecheck
 from bb.utils import path_utils
 from .imc_network import Network
@@ -222,44 +221,4 @@ class Application(object):
     for mapping in self.get_mappings():
       self.remove_mapping(mapping)
 
-def _home_import_hook():
-  """Handles imports from fake `bb.app.home` package."""
-  get_globals = globals
-  get_locals = locals
-  def hook(self, name, globals=None, locals=None, fromlist=None, level=-1):
-    if name.startswith("bb.app.home") and fromlist:
-      home_mod = __import__("bb.app.home", get_globals(), get_locals(),
-                            [], -1)
-      for _ in fromlist:
-        try:
-          _ = _.split(".")
-          _ = path_utils.join(*_)
-          path = path_utils.join(Application.get_home_dir(), "%s.py" % _)
-          mod = imp.load_source(".".join([name, _]), path)
-        except IOError, e:
-          raise ImportError("Module `%s' doesn't exist" % (path))
-        setattr(home_mod, _, mod)
-      return home_mod
-    return pyimport.ModuleImporter.import_module(self, name, globals, locals,
-                                                 fromlist, level)
-  # Update importer and install fixed importer
-  importer = pyimport.get_importer()
-  importer.import_module = types.MethodType(hook, importer,
-                                            pyimport.ModuleImporter)
-  pyimport.install_importer(importer)
-
 get_active_application = Application.get_active_instance
-
-# NOTE: this is temporary solution for automatic Mapping registration.
-
-def mapping_init_tracer(self, *args, **kwargs):
-  application = Application.identify_instance()
-  if not len(args) and "name" not in kwargs:
-    kwargs["name"] = application.gen_default_mapping_name(self)
-  Mapping.original_magic_init_method(self, *args, **kwargs)
-  application.add_mapping(self)
-
-Mapping.original_magic_init_method = Mapping.__init__
-Mapping.__init__ = types.MethodType(mapping_init_tracer, None, Mapping)
-
-#_home_import_hook()
