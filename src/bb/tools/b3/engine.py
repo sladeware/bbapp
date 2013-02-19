@@ -94,7 +94,7 @@ def register_rules():
 def run():
   version = get_version()
   rootdir = get_build_root()
-  print("b3 v.%s" % version)
+  print("b3 v%s" % version)
   command_class, command_args = parse_command(rootdir, sys.argv[1:])
   parser = optparse.OptionParser(version='b3 %s' % version)
   command = command_class(rootdir, parser, command_args)
