@@ -458,18 +458,11 @@ class CustomCCompiler(Compiler):
         src, ext = build[obj]
       except KeyError:
         continue
-      if not self._verbose:
-        sys.stdout.flush()
-        sys.stdout.write("Compiling '%s'\r" % src)
-        time.sleep(0.010)
-      else:
-        print "Compiling '%s'\r" % src
+      logger.debug("Compiling '%s'" % src)
       # Note: we pass a copy of files, options, etc. since we
       # need to privent their modification
       if not self.is_dry_run_mode_enabled():
         self._compile(obj, src, ext, list(cc_options), extra_postopts, pp_options)
-    if not self._verbose:
-      print
     if link is True:
       self.link(objects, self.get_output_filename())
     return objects

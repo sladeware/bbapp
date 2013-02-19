@@ -73,7 +73,6 @@ class Compiler(executable.ExecutableWrapper):
       if not path_utils.exists(path):
         raise Exception("Path doesn't exist: %s" % path)
       if not path in self._files:
-        logger.debug("Add file `%s'" % path)
         self._files.append(path)
       return path
     elif typecheck.is_callable(path):
