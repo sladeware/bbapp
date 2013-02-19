@@ -1,6 +1,9 @@
 # -*- coding: utf-8; -*-
+#
+# Copyright (c) 2013 Sladeware LLC
+# http://www.bionicbunny.org/
 
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 
 import os
 try:
@@ -70,8 +73,8 @@ class UserConfigParser(ConfigParser.SafeConfigParser):
       self.write_to(handle)
 
   def dump(self):
-    print "Dump cofig", self._path
+    print("Dump cofig", self._path)
     for section in self.get_sections():
-      print "[%s]" % section
+      print("[%s]" % section)
       for name, value in self.items(section):
-        print "%s = %s" % (name, value)
+        print("%s = %s" % (name, value))

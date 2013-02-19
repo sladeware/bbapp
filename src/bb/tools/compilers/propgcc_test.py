@@ -1,7 +1,5 @@
 # http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
-#
-# Author: Oleksandr Sviridenko
 
 import tempfile
 
@@ -21,7 +19,12 @@ int main()
 
 class PropGCCTest(unittest.TestCase):
 
+  def setup(self):
+    self._continue = PropGCC().check_executable()
+
   def test_compiling(self):
+    if not self._continue:
+      return
     input_fh = tempfile.NamedTemporaryFile(suffix=".c", delete=True)
     output_fh = tempfile.NamedTemporaryFile(suffix=".out", delete=False)
     compiler = PropGCC()

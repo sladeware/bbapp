@@ -91,20 +91,30 @@ class Mapping(object):
     if not thread_distributor:
       thread_distributor = RoundrobinThreadDistributor()
     self.set_thread_distributor(thread_distributor)
-    self.set_name(name) if name else self._gen_default_name()
+    if name:
+      self.set_name(name)
     if os_class or getattr(self.__class__, "os_class", None):
       self.set_os_class(os_class or self.__class__.os_class)
     if processor or self.__class__.processor:
       self.set_processor(processor or self.__class__.processor)
     if threads:
       self.register_threads(threads)
+    self._register()
+
+  def _register(self):
+    import bb.app
+    application = bb.app.get_active_application()
+    if not self.get_name():
+      self.set_name(application.gen_default_mapping_name(self))
+    application.add_mapping(self)
 
   def __str__(self):
-    return '%s[processor=%s,thread_distributor=%s]' \
+    return '%s[processor=%s,thread_distributor=%s,is_simulation_mode=%s]' \
         % (self.__class__.__name__,
            self._processor and self._processor.__class__.__name__ or None,
            self._thread_distributor and \
-             self._thread_distributor.__class__.__name__ or None)
+             self._thread_distributor.__class__.__name__ or None,
+           self._is_simulation_mode)
 
   def __build__(self):
     return self.gen_os()
@@ -121,7 +131,7 @@ class Mapping(object):
 
   def set_name(self, name):
     if not typecheck.is_string(name):
-      raise Exception("name must be string")
+      raise TypeError("name must be string")
     self._name = name
 
   def get_name(self):
@@ -130,7 +140,7 @@ class Mapping(object):
   def set_thread_distributor(self, distributor):
     """Sets thread-distributor that will be used in OS generation process."""
     if not isinstance(distributor, ThreadDistributor):
-      raise Exception("Distributor must be derived from ThreadDistributor.")
+      raise TypeError("Distributor must be derived from ThreadDistributor.")
     self._thread_distributor = distributor
 
   def get_thread_distributor(self):
@@ -142,7 +152,7 @@ class Mapping(object):
     format (see :func:`Thread.get_name_format`) to generate one.
     """
     if not isinstance(thread, Thread):
-      raise Exception("Must be derived from bb.app.os.Thread: %s", thread)
+      raise TypeError("Must be derived from bb.app.meta_os.Thread: %s", thread)
     if thread.get_name() is None:
       frmt = thread.get_name_format()
       if not frmt:

@@ -21,6 +21,8 @@ class ApplicationTest(unittest.TestCase):
 
   def test_mapping_registration(self):
     app = bbapp.get_active_application()
-    self.assert_equal(0, app.get_num_mappings())
+    self.assert_equal(0, app.get_num_mappings(),
+                      msg="Active application %s: %s"
+                      % (str(app), app.get_home_dir()))
     app.add_mappings([bbapp.Mapping("M1"), bbapp.Mapping("M2")])
     self.assert_equal(2, app.get_num_mappings())

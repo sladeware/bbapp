@@ -12,3 +12,6 @@ processor = board.get_processor()
 blinker = bb.app.Thread("BLINKER", "blinker_runner")
 buttons = bb.app.Thread("BUTTONS", "buttons_runner")
 sensor = bb.app.Mapping(processor=processor, threads=[blinker, buttons])
+
+if __name__ == "__main__":
+  print bb.app.get_active_application()

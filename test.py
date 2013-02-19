@@ -22,6 +22,8 @@ import os
 import sys
 import unittest
 
+import bb.config
+
 TEST_FILE_SUFFIX = "*_test.py"
 DEFAULT_VERBOSITY_LEVEL = 2
 
@@ -46,7 +48,10 @@ def run_tests():
   return 0
 
 def main():
-  run_tests()
+  try:
+    run_tests()
+  except Exception, e:
+    return 1
   return 0
 
 if __name__ == "__main__":
