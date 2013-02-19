@@ -22,7 +22,7 @@ import sys
 
 assert (2, 7) <= sys.version_info < (3, ), """\
 This code is meant for Python
-2.5 through 2.7. You might find that the parts you care about still work in
+2.7 through 3.0. You might find that the parts you care about still work in
 older Pythons or happen to work in newer ones, but you're on your own -- edit
 __init__.py if you want to try it.
 """

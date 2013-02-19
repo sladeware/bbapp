@@ -22,6 +22,8 @@ import os
 import sys
 import unittest
 
+import bb.config
+
 TEST_FILE_SUFFIX = "*_test.py"
 DEFAULT_VERBOSITY_LEVEL = 2
 
