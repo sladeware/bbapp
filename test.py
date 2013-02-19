@@ -48,7 +48,10 @@ def run_tests():
   return 0
 
 def main():
-  run_tests()
+  try:
+    run_tests()
+  except Exception, e:
+    return 1
   return 0
 
 if __name__ == "__main__":
