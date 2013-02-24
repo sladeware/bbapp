@@ -1,3 +1,5 @@
+# -*- coding: utf-8; -*-
+#
 # http://www.bionicbunny.org/
 # Copyright (c) 2012-2013 Sladeware LLC
 #
@@ -19,8 +21,8 @@ from bb.app.meta_os import Driver, Message
 
 class ButtonDriver(Driver):
 
-  name_format = 'BUTTON_DRIVER_%d'
-  runner = 'button_driver_runner'
+  name_format = "BUTTON_DRIVER_%d"
+  runner = "button_driver_runner"
   message_handlers = {
     Message("IS_BUTTON_PRESSED", [("pin", 1)]): "is_button_pressed",
     Message("ARE_BUTTONS_PRESSED", [("mask", 2)]): "are_buttons_pressed"

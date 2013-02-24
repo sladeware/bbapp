@@ -1,5 +1,5 @@
 # http://www.bionicbunny.org/
-# Copyright (c) 2012 Sladeware LLC
+# Copyright (c) 2012-2013 Sladeware LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ customizable time sharing scheduler algorithm.
 
 The kernel is represented by :class:`bb.app.os.kernel.Kernel`.
 """
+
+from __future__ import print_function
 
 from bb.utils import typecheck
 from ..port import Port
@@ -44,6 +46,13 @@ class Kernel(object):
       self.set_scheduler(scheduler)
     if core:
       self.set_core(core)
+
+  def __str__(self):
+    return '%s[threads=%d, ports=%d]' % \
+        (self.__class__.__name__, self.get_num_threads(), self.get_num_ports())
+
+  def __build__(self):
+    return self.get_threads()
 
   def set_core(self, core):
     self._core = core
@@ -114,7 +123,3 @@ class Kernel(object):
 
   def get_num_ports(self):
     return len(self.get_ports())
-
-  def __str__(self):
-    return '%s[threads=%d, ports=%d]' % \
-        (self.__class__.__name__, self.get_num_threads(), self.get_num_ports())
