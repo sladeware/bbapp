@@ -48,14 +48,13 @@ class Application(object):
   """Base class for those who needs to maintain global application state.
 
   Normally you don't need to subclass this class.
+
+  `home_dir` represents root directory for the application. If `home_dir` was
+  specified and it's not existed home directory, the new directory will be
+  initialized if `init_home_dir` is `True`.
   """
 
-  build_dir = "build"
-
   def __init__(self, home_dir=None, init_home_dir=False):
-    """If `home_dir` was specified and it's not existed home directory, the new
-    directory will be initialized.
-    """
     self._network = Network()
     self._home_dir = None
     self._build_dir = None
@@ -67,8 +66,9 @@ class Application(object):
     #self.set_build_dir(default_build_dir, make=True)
 
   def __str__(self):
-    return "%s[num_mappings=%d]" % (self.__class__.__name__,
-                                    self.get_num_mappings())
+    return "%s[home_dir='%s',num_mappings=%d]" \
+        % (self.__class__.__name__, self.get_home_dir(),
+           self.get_num_mappings())
 
   #instance_mngmnt
 
