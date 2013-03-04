@@ -79,6 +79,14 @@ def register_primitive(primitive, name=None):
 def unregister_primitive(name):
   raise NotImplementedError()
 
+def primitive(name=None, primitive=None):
+  if primitive:
+    register_primitive(primitive, name)
+  else:
+    raise Exception()
+
+setattr(primitives, "primitive", primitive)
+
 _rule_classes = dict()
 
 class RuleClassFactory(object):
@@ -291,7 +299,10 @@ class RuleWithSources(object):
     if not callable(func):
       raise TypeError()
     required_args = []
-    if func.func_code.co_argcount >= 2:
+    if hasattr(func, "func_code"):
+      if func.func_code.co_argcount >= 2:
+        required_args = [self, self.get_target()]
+    else:
       required_args = [self, self.get_target()]
     extra_sources = func(*required_args)
     if extra_sources:
@@ -318,7 +329,8 @@ class RuleWithSources(object):
         self._add_callable_source(source.__call__)
       rule = parse_address(source)
       if rule:
-        if source not in self.get_dependencies(): self.add_dependency(rule)
+        if source not in self.get_dependencies():
+          self.add_dependency(rule)
         source = rule
       #else:
       #  logger.warning("Cannot find appropriate rule for the source: %s" %
@@ -331,7 +343,9 @@ class RuleWithSources(object):
     elif typecheck.is_string(source):
       if not os.path.isabs(source):
         source = os.path.abspath(os.path.join(self._work_dir, source))
-    self._sources.append(source)
+    # FIXME: can be add not string based sources?
+    if typecheck.is_string(source) or isinstance(source, Rule):
+      self._sources.append(source)
     return source
 
   def add_sources(self, sources):

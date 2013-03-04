@@ -57,7 +57,7 @@ class OS(object):
 
   def __build__(self):
     """Helps b3 to build MetaOS object. Returns required dependencies."""
-    return [self.get_processor()]
+    return [self.get_processor()] + self.get_kernels()
 
   def _set_processor(self, processor):
     if not isinstance(processor, Processor):

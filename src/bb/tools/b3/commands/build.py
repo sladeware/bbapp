@@ -3,15 +3,21 @@
 # http://www.bionicbunny.org/
 # Copyright (c) 2013 Sladeware LLC
 
+from __future__ import print_function
+
+import sys
 import os
 import traceback
 
 import bb.config
-from .command import Command
+from bb.tools.b3.commands.command import Command
 from bb.tools.b3 import buildfile
 from bb.utils import path_utils
+from bb.utils import logging
 
 DEFAULT_TARGET = ":all"
+
+logger = logging.get_logger("bb")
 
 class Build(Command):
   """This class represents build command:
@@ -35,13 +41,16 @@ class Build(Command):
     for target in self.args[0:]:
       try:
         address = buildfile.get_address(root_dir, target)
-        addresses.append(address)
       except:
         self.error("Problem parsing target %s: %s" %
                    (target, traceback.format_exc()))
+      if not address:
+        print("Cannot find BUILD file for", target, file=sys.stderr)
+        continue
+      addresses.append(address)
     for address in addresses:
       try:
-        print buildfile.get_rule(address)
+        print(buildfile.get_rule(address))
         rule = buildfile.get_rule(address)
       except:
         self.error("Problem parsing BUILD rule %s: %s" %
@@ -65,9 +74,10 @@ class Build(Command):
 
   def execute(self):
     if self.options.list_rules:
-      print "List supported rules:"
+      print("List supported rules:")
       for rule in self.rules:
-        print "\t", rule.name
+        print("\t", rule.name)
       return
     for rule in self.rules:
+      logger.debug("Execute %s" % rule)
       rule.execute()

@@ -1,4 +1,4 @@
-# -*- encoding: utf-8; mode: python; -*-
+# -*- coding: utf-8; mode: python; -*-
 #
 # Copyright (c) 2013 Sladeware LLC
 # http://www.bionicbunny.org/
