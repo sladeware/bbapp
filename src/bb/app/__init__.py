@@ -29,3 +29,12 @@ same time the processes inside of an application can be segmented into
 
 from app import *
 from mapping import Mapping, Thread, Port, mapping_class_factory
+
+def create_application(*args, **kwargs):
+  return Application(*args, **kwargs)
+
+def get_active_application():
+  return Application.get_active_instance()
+
+def create_mapping(*args, **kwargs):
+  return Mapping(*args, **kwargs)

@@ -38,9 +38,7 @@ from bb.utils import path_utils
 from .imc_network import Network
 from .mapping import Mapping
 
-__all__ = ["get_active_application", "Application"]
-
-_register = dict()
+__all__ = ["Application"]
 
 SETTINGS_DIR = ".bbapp"
 
@@ -54,6 +52,8 @@ class Application(object):
   initialized if `init_home_dir` is `True`.
   """
 
+  _register = {}
+
   def __init__(self, home_dir=None, init_home_dir=False):
     self._network = Network()
     self._home_dir = None
@@ -64,6 +64,23 @@ class Application(object):
     self.set_home_dir(home_dir)
     #default_build_dir = path_utils.join(self._home_dir, self.__class__.build_dir)
     #self.set_build_dir(default_build_dir, make=True)
+
+  @classmethod
+  def _register_instance(cls, app):
+    if not isinstance(app, Application):
+      raise TypeError("app must be derived from Application")
+    if not app.get_home_dir() in cls._register:
+      cls._register[app.get_home_dir()] = app
+
+  @classmethod
+  def _unregister_instance(cls, app):
+    if not isinstance(app, Application):
+      raise TypeError("app must be derived from Application")
+    if app.get_home_dir() in cls._register:
+      del cls._register[app.get_home_dir()]
+
+  def __del__(self):
+    self._unregister_instance(self)
 
   def __str__(self):
     return "%s[home_dir='%s',num_mappings=%d]" \
@@ -84,9 +101,9 @@ class Application(object):
     """
     src = obj and inspect.getsourcefile(obj) or None
     home_dir = src and cls.find_home_dir(src) or cls.identify_home_dir()
-    if not _register.has_key(home_dir):
+    if not cls._register.has_key(home_dir):
       return Application(home_dir=home_dir)
-    return _register[home_dir]
+    return cls._register[home_dir]
 
   #home_dir_mngmnt
 
@@ -142,12 +159,12 @@ class Application(object):
     if not path_utils.exists(home_dir):
       raise Exception("`%s' doesn't exist" % home_dir)
     if self._home_dir:
-      del _register[self._home_dir]
-    if home_dir in _register:
+      self._unregister_instance(self)
+    if home_dir in self._register:
       raise Exception("%s is already using this home dir: %s" %
-                      (_register[home_dir], home_dir))
-    _register[home_dir] = self
+                      (self._register[home_dir], home_dir))
     self._home_dir = home_dir
+    self._register_instance(self)
 
   def get_home_dir(self):
     """Returns home directory"""
@@ -220,5 +237,3 @@ class Application(object):
   def remove_mappings(self):
     for mapping in self.get_mappings():
       self.remove_mapping(mapping)
-
-get_active_application = Application.get_active_instance
