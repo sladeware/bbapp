@@ -19,6 +19,10 @@ from __future__ import absolute_import
 
 import unittest
 
+TestLoader = unittest.TestLoader
+
+TextTestRunner = unittest.TextTestRunner
+
 class TestCase(unittest.TestCase):
   """This class represents the smallest testable units."""
 
@@ -26,6 +30,8 @@ class TestCase(unittest.TestCase):
     unittest.TestCase.__init__(self, *args, **kwargs)
     if hasattr(self, "setup"):
       self.setUp = self.setup
+    if hasattr(self, "teardown"):
+      self.tearDown = self.teardown
 
   assert_equal = unittest.TestCase.assertEqual
   assert_not_equal = unittest.TestCase.assertNotEqual
