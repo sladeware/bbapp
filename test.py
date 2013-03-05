@@ -17,11 +17,14 @@
 #
 # Author: Oleksandr Sviridenko <info@bionicbunny.org>
 
+from __future__ import print_function
+
 import optparse
 import os
 import sys
-import unittest
+import traceback
 
+from bb.utils.testing import unittest
 import bb.config
 
 TEST_FILE_SUFFIX = "*_test.py"
@@ -47,10 +50,21 @@ def run_tests():
   unittest.TextTestRunner(verbosity=options.verbosity_level).run(suite)
   return 0
 
+def trace_exception():
+  print("_" * 70)
+  print()
+  print("EXCEPTION")
+  print("_" * 70)
+  print()
+  traceback.print_exc(file=sys.stderr)
+  print("_" * 70)
+
 def main():
   try:
     run_tests()
   except Exception, e:
+    print("ERROR:", e, file=sys.stderr)
+    trace_exception()
     return 1
   return 0
 
