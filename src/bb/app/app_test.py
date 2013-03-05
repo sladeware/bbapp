@@ -14,15 +14,22 @@
 #
 # Author: Oleksandr Sviridenko
 
+from __future__ import print_function
+
 from bb import app as bbapp
 from bb.utils.testing import unittest
 
 class ApplicationTest(unittest.TestCase):
 
+  def setup(self):
+    self._app = bbapp.create_application()
+
+  def teardown(self):
+    del self._app
+
   def test_mapping_registration(self):
-    app = bbapp.get_active_application()
-    self.assert_equal(0, app.get_num_mappings(),
-                      msg="Active application %s: %s"
-                      % (str(app), app.get_home_dir()))
-    app.add_mappings([bbapp.Mapping("M1"), bbapp.Mapping("M2")])
-    self.assert_equal(2, app.get_num_mappings())
+    self.assert_equal(0, self._app.get_num_mappings(),
+                      msg="Active application %s" % str(self._app))
+    self._app.add_mappings([bbapp.create_mapping("M1"),
+                            bbapp.create_mapping("M2")])
+    self.assert_equal(2, self._app.get_num_mappings())
