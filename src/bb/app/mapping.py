@@ -80,7 +80,7 @@ class Mapping(object):
   name_format = "M%d"
 
   def __init__(self, name=None, processor=None, os_class=None, threads=[],
-               thread_distributor=None):
+               thread_distributor=None, autoreg=True):
     self._name = None
     self._threads = dict()
     self._os_class = None
@@ -99,18 +99,21 @@ class Mapping(object):
       self.set_processor(processor or self.__class__.processor)
     if threads:
       self.register_threads(threads)
-    self._register()
+    if autoreg:
+      self._register()
 
   def _register(self):
+    print("<<<<<<<<<<<<>>>>>>>>>>>>")
     import bb.app
-    application = bb.app.get_active_application()
+    app = bb.app.get_active_application()
     if not self.get_name():
-      self.set_name(application.gen_default_mapping_name(self))
-    application.add_mapping(self)
+      self.set_name(app.gen_default_mapping_name(self))
+    app.add_mapping(self)
 
   def __str__(self):
-    return '%s[processor=%s,thread_distributor=%s,is_simulation_mode=%s]' \
+    return '%s[name=%s,processor=%s,thread_distributor=%s,is_simulation_mode=%s]' \
         % (self.__class__.__name__,
+           self._name,
            self._processor and self._processor.__class__.__name__ or None,
            self._thread_distributor and \
              self._thread_distributor.__class__.__name__ or None,

@@ -33,8 +33,14 @@ from mapping import Mapping, Thread, Port, mapping_class_factory
 def create_application(*args, **kwargs):
   return Application(*args, **kwargs)
 
+def delete_application(app):
+  Application._unregister_instance(app)
+
 def get_active_application():
   return Application.get_active_instance()
+
+def idenfity_application(obj=None):
+  return Application.identify_instance(obj)
 
 def create_mapping(*args, **kwargs):
   return Mapping(*args, **kwargs)

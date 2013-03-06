@@ -14,8 +14,6 @@
 #
 # Author: Oleksandr Sviridenko
 
-from __future__ import print_function
-
 from bb import app as bbapp
 from bb.utils.testing import unittest
 
@@ -25,11 +23,14 @@ class ApplicationTest(unittest.TestCase):
     self._app = bbapp.create_application()
 
   def teardown(self):
-    del self._app
+    bbapp.delete_application(self._app)
 
   def test_mapping_registration(self):
     self.assert_equal(0, self._app.get_num_mappings(),
                       msg="Active application %s" % str(self._app))
-    self._app.add_mappings([bbapp.create_mapping("M1"),
-                            bbapp.create_mapping("M2")])
+    self._app.add_mappings([bbapp.create_mapping("M1", autoreg=False),
+                            bbapp.create_mapping("M2", autoreg=False)])
     self.assert_equal(2, self._app.get_num_mappings())
+    self._app.create_mapping("M3"),
+    self._app.create_mapping("M4")
+    self.assert_equal(4, self._app.get_num_mappings())
