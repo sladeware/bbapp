@@ -79,9 +79,6 @@ class Application(object):
     if app.get_home_dir() in cls._register:
       del cls._register[app.get_home_dir()]
 
-  def __del__(self):
-    self._unregister_instance(self)
-
   def __str__(self):
     return "%s[home_dir='%s',num_mappings=%d]" \
         % (self.__class__.__name__, self.get_home_dir(),
@@ -225,6 +222,13 @@ class Application(object):
       raise TypeError("'mappings' must be list")
     for mapping in mappings:
       self.add_mapping(mapping)
+
+  def create_mapping(self, *args, **kwargs):
+    fixed_kwargs = dict(**kwargs)
+    fixed_kwargs.update(autoreg=False)
+    mapping = Mapping(*args, **fixed_kwargs)
+    self.add_mapping(mapping)
+    return mapping
 
   def remove_mapping(self, mapping):
     if not isinstance(mapping, Mapping):
