@@ -58,10 +58,10 @@ class Application(object):
     self._network = Network()
     self._home_dir = None
     self._build_dir = None
-    home_dir = home_dir or os.getcwd()
-    if not self.is_home_dir(home_dir) and init_home_dir:
-      self.init_home_dir(home_dir)
-    self.set_home_dir(home_dir)
+    if home_dir:
+      if not self.is_home_dir(home_dir) and init_home_dir:
+        self.init_home_dir(home_dir)
+      self.set_home_dir(home_dir)
     #default_build_dir = path_utils.join(self._home_dir, self.__class__.build_dir)
     #self.set_build_dir(default_build_dir, make=True)
 
