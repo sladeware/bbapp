@@ -103,7 +103,6 @@ class Mapping(object):
       self._register()
 
   def _register(self):
-    print("<<<<<<<<<<<<>>>>>>>>>>>>")
     import bb.app
     app = bb.app.get_active_application()
     if not self.get_name():
