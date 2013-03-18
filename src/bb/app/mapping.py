@@ -83,6 +83,7 @@ class Mapping(object):
                thread_distributor=None, autoreg=True):
     self._name = None
     self._threads = dict()
+    self._ports = dict()
     self._os_class = None
     self._max_message_size = 0
     self._is_simulation_mode = False
@@ -129,6 +130,7 @@ class Mapping(object):
     self._max_message_size = size
 
   def get_max_message_size(self):
+    """Returns max message payload size in bytes."""
     return self._max_message_size
 
   def set_name(self, name):
@@ -139,6 +141,8 @@ class Mapping(object):
   def get_name(self):
     return self._name
 
+  #threads
+
   def set_thread_distributor(self, distributor):
     """Sets thread-distributor that will be used in OS generation process."""
     if not isinstance(distributor, ThreadDistributor):
@@ -148,22 +152,34 @@ class Mapping(object):
   def get_thread_distributor(self):
     return self._thread_distributor
 
-  def register_thread(self, thread):
+  def register_thread(self, thread, name=None):
     """Registers thread by its name. The name has to be unique within this
-    mapping. If thread doesn't have a name, mapping will try to use its name
-    format (see :func:`Thread.get_name_format`) to generate one.
+    mapping. If thread doesn't have a name and it wasn't provided, mapping will
+    try to use its name format (see :func:`Thread.get_name_format`) to generate
+    one.
+
+    If the thread has a port, this port will be registered with threads name.
     """
     if not isinstance(thread, Thread):
       raise TypeError("Must be derived from bb.app.meta_os.Thread: %s", thread)
-    if thread.get_name() is None:
-      frmt = thread.get_name_format()
-      if not frmt:
-        logger.warning("Thread %s doesn't have a name and the format cannot be"
-                       "obtained to generate one." % thread)
-        return
-      # TODO(team): improve name generation within a mapping
-      thread.set_name(frmt % self.get_num_threads())
-    self._threads[ thread.get_name() ] = thread
+    if name and not typecheck.is_string(name):
+      raise TypeError()
+    if name:
+      thread.set_name(name)
+    else:
+      if thread.get_name() is None:
+        frmt = thread.get_name_format()
+        if not frmt:
+          logger.warning("Thread %s doesn't have a name and the format cannot"
+                         "be obtained to generate one." % thread)
+          return
+        # TODO(team): improve name generation within a mapping; it has to be
+        # unique.
+        thread.set_name(frmt % self.get_num_threads())
+      name = thread.get_name()
+    if thread.has_port():
+      self.register_port(thread.get_port(), name)
+    self._threads[name] = thread
 
   def get_thread(self, name):
     if not typecheck.is_string(name):
@@ -255,10 +271,14 @@ class Mapping(object):
     processor.set_os(os)
     return os
 
-def mapping_class_factory(*args, **kwargs):
-  def __init__(self, *args, **kwargs):
-    Mapping.__init__(self, *args, **kwargs)
-  __dict__ = {
-    "__init__":__init__
-  }
-  return type("Mapping", (Mapping,), __dict__)
+  #ports
+
+  def register_port(self, port, name):
+    if not typecheck.is_string(name):
+      raise TypeError("name must be a string")
+    if not isinstance(port, Port):
+      raise TypeError("port must be derived from Port")
+    self._ports[name] = port
+
+  def get_ports(self):
+    return self._ports.values()
