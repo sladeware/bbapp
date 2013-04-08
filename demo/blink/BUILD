@@ -2,10 +2,7 @@
 #
 # Copyright (c) 2013 Sladeware LLC
 
-from blink import sensor, blinker, buttons
-
-propeller_binary(name = "8x8_led_matrix",
-                 srcs = ["8x8_led_matrix.c"])
+from blink import sensor
 
 propeller_binary(target = "blink",
                  srcs = [sensor, "blink.c"])
@@ -13,5 +10,6 @@ propeller_binary(target = "blink",
 propeller_load(name = "blink-load",
                binary = "blink",
                deps = [":blink"],
+               terminal_mode = False,
                port = "/dev/ttyUSB0",
                eeprom = False)
