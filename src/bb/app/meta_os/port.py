@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+# -*- coding: utf-8; -*-
 #
+# Copyright (c) 2012-2013 Sladeware LLC
 # http://www.bionicbunny.org/
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
+from bb.utils import typecheck
 
 class Port(object):
   """Thread communication technique. At some point, this is just a protected
@@ -25,15 +25,22 @@ class Port(object):
   """
 
   def __init__(self, capacity):
-    assert capacity > 0, "Port capacity must be greater than zero"
+    if capacity < 1:
+      raise Exception("Port capacity must be greater than zero")
+    self._name = None
     self._capacity = capacity
+
+  def _set_name(self, name):
+    if not typecheck.is_string(name):
+      raise TypeError("name must be a string")
+    self._name = name
+
+  def get_name(self):
+    return self._name
 
   def get_capacity(self):
     return self._capacity
 
-  @property
-  def capacity(self):
-    return self.get_capacity()
-
   def __str__(self):
-    return "%s[capacity=%d]" % (self.__class__.__name__, self.get_capacity())
+    return "%s[name=%s, capacity=%d]" % (self.__class__.__name__,
+                                         self.get_name(), self.get_capacity())
