@@ -1,4 +1,7 @@
+# -*- coding: utf-8; -*-
+#
 # Copyright (c) 2012-2013 Sladeware LLC
+# http://www.bionicbunny.org/
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,32 +17,64 @@
 #
 # Author: Oleksandr Sviridenko
 
-"""The following example shows the most simple case how to define a new message
+"""The messenger is ITC wrapper that hides message routing.
+
+The following example shows the most simple case how to define a new message
 handler by using :func:`Messenger.message_handler` decorator::
 
   serial_open_msg = Message('SERIAL_OPEN', ('rx', 'tx'))
   serial_messenger = Messenger('SERIAL_MESSENGER')
-  serial_messenger.add_message_handler(serial_open_msg, 'serial_open_handler')
+  serial_messenger.add_message_handler(
+    MessageHandler('serial_open_handler', serial_open_msg))
 
 Or the same example, but as a class::
 
   class SerialMessenger(Messenger):
-    name = 'SERIAL_MESSENGER'
-    message_handlers = {
-      Message('SERIAL_OPEN', (('rx', 2), ('tx', 2))): 'serial_open_handler',
-    }
+    message_handlers = [
+      ('serial_open_handler', ('SERIAL_OPEN', [('rx', 2), ('tx', 2)]))
+    ]
 
-When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message,
-the message is directed to :func:`SerialMessenger.serial_open_handler`
-handler for the actual processing.
+When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message, the
+message is directed to :func:`serial_open_handler` handler for the actual
+processing.
 """
 
 from bb.utils import logging
 from bb.utils import typecheck
 from thread import Thread
-from message import Message
+from bb.app.meta_os.message import Message
 
 logger = logging.get_logger("bb")
+
+class MessageHandler(object):
+
+  def __init__(self, name, message, require_input=True, require_output=True):
+    self._name = None
+    self._set_name(name)
+    self._message = message
+    self._require_input = require_input
+    self._require_output = require_output
+
+  def __str__(self):
+    return "%s[name='%s', message=%s]" % (self.__class__.__name__, self._name,
+                                        self._message)
+
+  def _set_name(self, name):
+    if not typecheck.is_string(name):
+      raise TypeError()
+    self._name = name
+
+  def get_name(self):
+    return self._name
+
+  def get_message(self):
+    return self._message
+
+  def is_input_required(self):
+    return self._require_input
+
+  def is_output_required(self):
+    return self._require_output
 
 class Messenger(Thread):
   """This class is a special form of thread, which allows to automatically
@@ -53,11 +88,11 @@ class Messenger(Thread):
     name of handler, e.g. ``serial_open_handler``.
   """
 
-  message_handlers = {}
+  message_handlers = []
   idle_action = None
   default_action = None
 
-  def __init__(self, name=None, runner=None, message_handlers={},
+  def __init__(self, name=None, runner=None, message_handlers=[],
                idle_action=None, default_action=None, port=None):
     Thread.__init__(self, name, runner=runner, port=port)
     self._default_action = None
@@ -95,23 +130,42 @@ class Messenger(Thread):
   def get_message_handlers(self):
     return self._message_handlers
 
-  def add_message_handler(self, message, handler):
+  def add_message_handler(self, handler):
     """Maps a command extracted from a message to the specified handler
     function. Note, handler's name should ends with '_handler'.
     """
+    if not isinstance(handler, MessageHandler):
+      raise TypeError('message handler has to be derived from MessageHandler')
+    message = handler.get_message()
     if not self.register_message(message):
       return self
-    if not typecheck.is_string(handler):
-      raise TypeError('message handler has to be a string')
-    if not handler.endswith('_handler'):
-      logger.warning("Message handler '%s' that handles message '%s' "
-                     "doesn't end with '_handler'" % (handler, message))
+    if not handler.get_name().endswith('_handler'):
+      logger.warning("Message handler %s that handles message %s "
+                     "doesn't end with '_handler'"
+                     % (handler.get_name(), message))
     self._message_handlers[message] = handler
     return self
 
   def add_message_handlers(self, message_handlers):
-    if not typecheck.is_dict(message_handlers):
-      raise TypeError('message_handlers has to be a dict')
-    for message, handler in message_handlers.items():
-      self.add_message_handler(message, handler)
+    """Add message handlers. message_handlers can be a list of
+    MessageHandler's/tuples.
+    """
+    if not typecheck.is_list(message_handlers):
+      raise TypeError('message_handlers has to be a list')
+    for handler in message_handlers:
+      if isinstance(handler, MessageHandler):
+        self.add_message_handler(handler)
+      else:
+        if not typecheck.is_tuple(handler):
+          raise TypeError("handler must be a tuple: %s" % type(handler))
+        if len(handler) < 2:
+          raise Exception("Handler should have more than two parameters")
+        if typecheck.is_tuple(handler[1]):
+          message = Message(*handler[1])
+        else:
+          raise TypeError()
+        handler = list(handler)
+        handler[1] = message
+        handler = MessageHandler(*handler)
+      self.add_message_handler(handler)
     return self

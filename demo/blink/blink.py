@@ -3,15 +3,15 @@
 # http://www.bionicbunny.org/
 # Copyright (c) 2013 Sladeware LLC
 
-import bb
+from bb import app as bbapp
+from bb.app import Mapping, Thread, Port
 from bb.app.hardware.devices.boards import P8X32A_QuickStartBoard
-from bb.app.hardware.devices.leds import LED
+from bb.app.meta_os.drivers.gpio import ButtonDriver
 
 board = P8X32A_QuickStartBoard()
 processor = board.get_processor()
-blinker = bb.app.Thread("BLINKER", "blinker_runner")
-buttons = bb.app.Thread("BUTTONS", "buttons_runner")
-sensor = bb.app.Mapping(processor=processor, threads=[blinker, buttons])
-
-if __name__ == "__main__":
-  print bb.app.get_active_application()
+sensor = bbapp.create_mapping(
+  processor=processor,
+  threads=[Thread("BLINKER", "blinker_runner", port=Port(10)),
+           ButtonDriver("BUTTON_DRIVER", port=Port(10))]
+)

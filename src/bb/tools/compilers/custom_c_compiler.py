@@ -458,7 +458,7 @@ class CustomCCompiler(Compiler):
         src, ext = build[obj]
       except KeyError:
         continue
-      logger.debug("Compiling '%s'" % src)
+      logger.info("Compiling %s" % src)
       # Note: we pass a copy of files, options, etc. since we
       # need to privent their modification
       if not self.is_dry_run_mode_enabled():

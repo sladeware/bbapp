@@ -47,9 +47,9 @@ class Thread(object):
   def register_message(self, message):
     if not isinstance(message, Message):
       raise TypeError('message has to be derived from class Message.')
-    if message.label in self._messages:
+    if message.get_label() in self._messages:
       return False
-    self._messages[message.label] = message
+    self._messages[message.get_label()] = message
     return True
 
   def get_supported_messages(self):

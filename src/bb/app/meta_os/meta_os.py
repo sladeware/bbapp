@@ -78,22 +78,12 @@ class OS(object):
       print("  %d. %s" % (i ,str(message)))
     print("max message size: %s byte(s)" % self.get_max_message_size())
 
-  def _set_max_message_size(self, max_size=0):
-    size = 0
-    # Compute min message size
-    for message in self.get_messages():
-      if message.size > size:
-        size = message.size
-    if max_size > size:
-      size = max_size
-    self._max_message_size = size
-
   def _extract_messages(self):
     self._messages = {}
     for thread in self.get_threads():
       messages = thread.get_supported_messages()
       for message in messages:
-        self._messages[message.label] = message
+        self._messages[message.get_label()] = message
 
   @property
   def processor(self):
@@ -135,6 +125,16 @@ class OS(object):
     return drivers
 
   #msg_mngmnt
+
+  def _set_max_message_size(self, max_size=0):
+    size = 0
+    # Compute min message size
+    for message in self.get_messages():
+      if message.get_byte_size() > size:
+        size = message.get_byte_size()
+    if max_size > size:
+      size = max_size
+    self._max_message_size = size
 
   def get_max_message_size(self):
     return self._max_message_size

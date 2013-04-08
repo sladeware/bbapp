@@ -28,7 +28,7 @@ same time the processes inside of an application can be segmented into
 """
 
 from app import *
-from mapping import Mapping, Thread, Port, mapping_class_factory
+from mapping import Mapping, Thread, Port
 
 def create_application(*args, **kwargs):
   return Application(*args, **kwargs)
