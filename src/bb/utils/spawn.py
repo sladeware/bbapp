@@ -89,9 +89,10 @@ def _spawn_posix(cmd, search_path=True, debug=False):
   if not pid: # in a new child
     # Redirect STDIN, STDOUT and STDERR
     if not debug:
-      os.dup2(child_stdin , _stdin_fd)
-      os.dup2(child_stdout, _stdout_fd)
-      os.dup2(child_stderr, _stderr_fd)
+      #os.dup2(child_stdin , _stdin_fd)
+      #os.dup2(child_stdout, _stdout_fd)
+      #os.dup2(child_stderr, _stderr_fd)
+      pass
     try:
       exec_fn(cmd[0], cmd)
     except OSError, e:
@@ -108,10 +109,6 @@ def _spawn_posix(cmd, search_path=True, debug=False):
         if exc.errno == errno.EINTR:
           continue
         raise ExecutionError("Command '%s' failed: %s" % (cmd[0], exc[-1]))
-      if not debug:
-        os.close(child_stdin)
-        os.close(child_stdout)
-        os.close(child_stderr)
       if os.WIFSIGNALED(status):
         raise ExecutionError("Command '%s' terminated by signal %d"
                              % (cmd[0], os.WTERMSIG(status)))
@@ -127,3 +124,7 @@ def _spawn_posix(cmd, search_path=True, debug=False):
       else:
         raise ExecutionError("Unknown error executing %s: termination status %d"
                              % (cmd[0], status))
+      if not debug:
+        os.close(child_stdin)
+        os.close(child_stdout)
+        os.close(child_stderr)
