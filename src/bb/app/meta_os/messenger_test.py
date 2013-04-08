@@ -21,16 +21,16 @@ class MessageTest(unittest.TestCase):
 
   def test_id(self):
     msg = Message("SERIAL_OPEN", ("rx", "tx"))
-    self.assert_equal("SERIAL_OPEN", msg.label)
+    self.assert_equal("SERIAL_OPEN", msg.get_label())
 
   def test_io_fields(self):
     msg = Message("SERIAL_OPEN", ("rx", "tx"))
-    self.assert_equal(2, len(msg.fields))
-    for field in msg.input_fields:
+    self.assert_equal(2, len(msg.get_fields()))
+    for field in msg.get_fields():
       self.assert_true(isinstance(field, Message.Field))
     for i, name, size in ((0, "rx", 0), (1, "tx", 0)):
-      self.assert_equal(name, msg.input_fields[i].name)
-      self.assert_equal(size, msg.input_fields[i].size)
+      self.assert_equal(name, msg.get_fields()[i].name)
+      self.assert_equal(size, msg.get_fields()[i].size)
 
 class MessagingTest(unittest.TestCase):
   pass
