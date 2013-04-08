@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+# -*- coding: utf-8; -*-
 #
-# http://bionicbunny.org/
-# Copyright (c) 2012 Sladeware LLC
+# Copyright (c) 2012-2013 Sladeware LLC
+# http://www.bionicbunny.org/
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__copyright__ = "Copyright (c) 2012 Sladeware LLC"
-__author__ = "Oleksandr Sviridenko"
-
 """
 Example:
 
-    from bb.os import Thread, Messenger, Channel
+    from bb.app.meta_os import Thread, Messenger, Channel
 
     sender = Thread("SENDER", "sender_runner")
     receiver = Messenger("RECEIVER", "receiver_runner",
