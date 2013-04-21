@@ -15,8 +15,8 @@
 
 from bb import app as bbapp
 from bb.utils.testing import unittest
-from mapping import Mapping
-from meta_os.thread import Thread
+from bb.app.mapping import Mapping
+from bb.app.os.thread import Thread
 
 class MappingTest(unittest.TestCase):
 
