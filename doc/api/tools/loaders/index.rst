@@ -2,8 +2,12 @@
 Loaders
 *******
 
-.. toctree::
+This package contains different loaders that helps to load binaries on the
+boards.
 
-   bstl.rst
-   loader.rst
-   propler.rst
+.. toctree::
+   :maxdepth: 1
+
+   bstl
+   loader
+   propler

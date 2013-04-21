@@ -12,8 +12,8 @@ BBOS has the following main components:
    :maxdepth: 2
 
    drivers/index
-   kernel
-   meta_os
+   kernel/index
+   os
    message
    messenger
    thread

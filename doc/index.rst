@@ -1,27 +1,30 @@
-.. _distutils-index:
+################################################
+Bionic Bunny Application |version| documentation
+################################################
 
-###############################
-Bionic Bunny meta platform
-###############################
-
-Welcome! This is the documentation for Bionic Bunny meta platform |version|, last updated |today|.
+Welcome! This is the documentation for Bionic Bunny Application |version|, last
+updated |today|.
 
 :Authors:
-   Slade Maurer <slade@bionicbunny.org>,
-   Alexander Sviridenko <oleks@bionicbunny.org>
+   Slade Maurer <slade@computer.org>,
+   Alexander Sviridenko <oleks.sviridenko@gmail.com>
 :Version: |version|
 :Date: |today|
+:E-mail: info@bionicbunny.org
 
-Guide
------
+**Documentation:**
+
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
-   guide/index.rst
+   guide/index
+   api/index
+   glossary
 
-API Reference
------------------------
+**See also:**
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   api/index.rst
+   todo
+   copyright
