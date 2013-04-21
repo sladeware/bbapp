@@ -14,6 +14,28 @@
 #
 # Author: Oleksandr Sviridenko
 
+"""The multi-tasking BBOS kernel is responsible for the management of tasks and
+communication between them. In BBOS terms these tasks are called `threads`. The
+thread is an atomic unit of action within the BBOS operating system, which
+describes application specific actions wrapped into a single context of
+execution.
+
+A thread is represented by the :class:`Thread`. This class represents
+computation performed by an independent context of execution.
+
+Let's take a look at an example to make this more clear. The following code
+snippet creates a new thread, whose target is the function ``hello_world``::
+
+  def hello_world():
+    print 'Hello world!'
+
+  hello = m.register_thread(Thread('HELLO', hello_world))
+
+Now we have a thread called ``HELLO`` that handles our function
+``hello_world``. Within BBOS such a function is called the thread's `entry
+point` (or simply `runner`).
+"""
+
 from port import Port
 from message import Message
 from bb.utils import typecheck
@@ -22,6 +44,11 @@ class Thread(object):
   """The thread is an atomic unit action within the BB operating system, which
   describes application specific actions wrapped into a single context of
   execution.
+
+  :param name: A string that represents thread's name.
+  :param runner: A string that represents function name.
+  :param port: A :class:`Port` instance that will be used for messaging.
+  :param messages: A list of :class:`Message` instances.
   """
 
   name = None
@@ -45,6 +72,13 @@ class Thread(object):
       self._name_format = getattr(self.__class__, "name_format")
 
   def register_message(self, message):
+    """Registers message so that OS will know that this thread will send/receive
+    the message.
+
+    :param message: A :class:`Message` derived instance.
+
+    :raises: TypeError
+    """
     if not isinstance(message, Message):
       raise TypeError('message has to be derived from class Message.')
     if message.get_label() in self._messages:
@@ -53,10 +87,17 @@ class Thread(object):
     return True
 
   def get_supported_messages(self):
-    """Return list of supported messages."""
+    """Returns list of supported messages.
+
+    :returns: A list of :class:`Message` instances.
+    """
     return self._messages.values()
 
   def unregister_message(self, message):
+    """Unregisters message.
+
+    :param message: A :class:`Message` instance.
+    """
     if not isinstance(message, Message):
       raise TypeError('message has to be derived from class Message.')
     if message.label not in self._messages:
@@ -64,6 +105,10 @@ class Thread(object):
     del self._messages[message.label]
 
   def get_name_format(self):
+    """Returns desired name format.
+
+    :returns: A string that represents name format.
+    """
     return self._name_format
 
   def set_name_format(self, frmt):
@@ -77,6 +122,7 @@ class Thread(object):
     self._runner = runner
 
   def get_runner(self):
+    """Returns runner's name."""
     return self._runner
 
   def set_name(self, name):
@@ -87,9 +133,14 @@ class Thread(object):
     self._name = name
 
   def get_name(self):
+    """Returns thread name."""
     return self._name
 
   def has_port(self):
+    """Returns whether or not this thread has a port for communication.
+
+    :returns: `True` or `False`.
+    """
     return not self.get_port() is None
 
   def set_port(self, port):

@@ -15,13 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Thread communication technique. At some point, this is just a protected
+messaging pool for communication between threads.
+
+All the ports are registered within a :class:`~bb.app.mapping.Mapping` with help
+of :func:`~bb.app.mapping.Mapping.register_port` method.
+"""
+
 from bb.utils import typecheck
 
 class Port(object):
-  """Thread communication technique. At some point, this is just a protected
-  messaging pool for communication between threads.
+  """This class represents a port.
 
-  Each port has a ``name`` and ``capacity``, or how many messages it can keep.
+  :param capacity: An integer that defines how many messages this port can keep.
   """
 
   def __init__(self, capacity):
@@ -39,6 +45,7 @@ class Port(object):
     return self._name
 
   def get_capacity(self):
+    """Returns port capacity value."""
     return self._capacity
 
   def __str__(self):

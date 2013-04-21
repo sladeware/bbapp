@@ -28,7 +28,10 @@ from drivers import Driver
 from bb.app.hardware.devices.processors import Processor
 
 class OS(object):
-  """This class is container/environment for Kernel's."""
+  """This class is container/environment for :class:`Kernel`'s.
+
+  :param processor: A :class:`Processor` instance on which OS runs.
+  """
 
   kernel_class = Kernel
 
@@ -91,7 +94,10 @@ class OS(object):
     return self.get_processor()
 
   def get_processor(self):
-    """Return Processor instance on which OS will be running."""
+    """Returns processor on which OS will be running.
+
+    :returns: A :class:`Processor` instance.
+    """
     return self._processor
 
   @property
@@ -102,6 +108,10 @@ class OS(object):
     return len(self.get_kernels())
 
   def get_kernels(self):
+    """Returns kernels within this OS.
+
+    :returns: A list of :class:`Kernel` instances.
+    """
     return self._kernels
 
   def get_kernel(self, i=0):
@@ -112,19 +122,25 @@ class OS(object):
     return len(self.get_threads())
 
   def get_threads(self):
+    """Returns threads from all the kernels.
+
+    :returns: A list of :class:`bb.app.meta_os.thread.Thread` instances.
+    """
     threads = []
     for kernel in self.get_kernels():
       threads.extend(kernel.get_threads())
     return threads
 
   def get_drivers(self):
+    """Returns drivers from all the kernels.
+
+    :returns: A list of :class:`Driver` instances.
+    """
     drivers = []
     for thread in self.get_threads():
       if isinstance(thread, Driver):
         drivers.append(thread)
     return drivers
-
-  #msg_mngmnt
 
   def _set_max_message_size(self, max_size=0):
     size = 0
@@ -140,9 +156,14 @@ class OS(object):
     return self._max_message_size
 
   def get_messages(self):
+    """Returns all messages that can be pass over this OS.
+
+    :returns: A list of :class:`Message` instances.
+    """
     return self._messages.values()
 
   def get_num_messages(self):
     """Returns number of messages supported by threads within this
-    meta-operating system."""
+    meta-operating system.
+    """
     return len(self.get_messages())

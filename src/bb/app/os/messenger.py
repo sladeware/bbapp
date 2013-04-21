@@ -17,15 +17,17 @@
 #
 # Author: Oleksandr Sviridenko
 
-"""The messenger is ITC wrapper that hides message routing.
+"""The *messenger* is ITC wrapper that hides message routing. The
+:class:`Messenger` processes message sent by other threads and also sends
+messages to other threads. To communicate with other threads it uses BBOS native
+ITC mechanism.
 
 The following example shows the most simple case how to define a new message
-handler by using :func:`Messenger.message_handler` decorator::
+handler by using :func:`Messenger.add_message_handler`::
 
-  serial_open_msg = Message('SERIAL_OPEN', ('rx', 'tx'))
-  serial_messenger = Messenger('SERIAL_MESSENGER')
-  serial_messenger.add_message_handler(
-    MessageHandler('serial_open_handler', serial_open_msg))
+  serial_open_msg = Message('SERIAL_OPEN', [('rx', 2), ('tx', 2)])
+  serial_messenger = Messenger('SERIAL_MSNGR')
+  serial_messenger.add_message_handler(MessageHandler('serial_open_handler', serial_open_msg))
 
 Or the same example, but as a class::
 
@@ -34,8 +36,10 @@ Or the same example, but as a class::
       ('serial_open_handler', ('SERIAL_OPEN', [('rx', 2), ('tx', 2)]))
     ]
 
+  serial_messenger = SerialMessenger()
+
 When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message, the
-message is directed to :func:`serial_open_handler` handler for the actual
+message is directed to ``serial_open_handler`` handler for the actual
 processing.
 """
 
@@ -47,6 +51,15 @@ from bb.app.meta_os.message import Message
 logger = logging.get_logger("bb")
 
 class MessageHandler(object):
+  """This class represents :class:`~bb.app.meta_os.message.Message`
+  handler. This handler provides a description to BBOS of how to handle specific
+  message.
+
+  :param name: A string that represents handler's name.
+  :param message: A :class:`Message` instance.
+  :param require_input: Whether or not handler requires input.
+  :param require_output: Whether or not handler requires output.
+  """
 
   def __init__(self, name, message, require_input=True, require_output=True):
     self._name = None
@@ -65,15 +78,28 @@ class MessageHandler(object):
     self._name = name
 
   def get_name(self):
+    """Returns a string that represents handler's name."""
     return self._name
 
   def get_message(self):
+    """Returns handled message.
+
+    :returns: A :class:`Message` instance.
+    """
     return self._message
 
   def is_input_required(self):
+    """Returns whether or not input is required.
+
+    :returns: ``True`` or ``False``.
+    """
     return self._require_input
 
   def is_output_required(self):
+    """Returns whether or not output is required.
+
+    :returns: ``True`` or ``False``.
+    """
     return self._require_output
 
 class Messenger(Thread):
@@ -86,6 +112,13 @@ class Messenger(Thread):
     In order to privent any conflicts with already defined methods the message
     handler should be named by concatinating `_handler` postfix to the the
     name of handler, e.g. ``serial_open_handler``.
+
+  :param name: A string that represents messenger's name.
+  :param idle_action: A string that represents function name that will be called
+    when messenger is idle.
+  :param default_action: A string that represents function name that will be
+    called to handle unknown message.
+  :param port: A :class:`Port` instance that will keep messages for the messenger.
   """
 
   message_handlers = []
@@ -115,6 +148,7 @@ class Messenger(Thread):
     self._default_action = action
 
   def get_idle_action(self):
+    """Returns a string that represents idle function name."""
     return self._idle_action
 
   def set_idle_action(self, action):
@@ -128,11 +162,17 @@ class Messenger(Thread):
     return self._message_handlers.get(message, None)
 
   def get_message_handlers(self):
+    """Returns all registered message handlers.
+
+    :returns: A list of :class:`MessageHandler` instances.
+    """
     return self._message_handlers
 
   def add_message_handler(self, handler):
     """Maps a command extracted from a message to the specified handler
-    function. Note, handler's name should ends with '_handler'.
+    function. Note, handler's name should ends with `_handler`.
+
+    :param handler: A :class:`MessageHandler` instance.
     """
     if not isinstance(handler, MessageHandler):
       raise TypeError('message handler has to be derived from MessageHandler')
@@ -147,8 +187,9 @@ class Messenger(Thread):
     return self
 
   def add_message_handlers(self, message_handlers):
-    """Add message handlers. message_handlers can be a list of
-    MessageHandler's/tuples.
+    """Add message handlers.
+
+    :param message_handlers: A list/tuple of :class:`MessageHandler`.
     """
     if not typecheck.is_list(message_handlers):
       raise TypeError('message_handlers has to be a list')

@@ -16,27 +16,31 @@
 # limitations under the License.
 
 """The messages are used by OS as the base unit for inter-thread
-communication. A new message can be created with help of Message class as
-follows:
+communication. A new message can be created with help of :class:`Message` class
+as follows::
 
   echo = Message('ECHO', ('text', 2))
 
-The message echo here has ID 'ECHO' and one field 'text' of 2 bytes. Once a new
-message has been created it can be registered by thread:
+The message ``echo`` here has ID `ECHO` and one field `text` of 2 bytes. Once a
+new message has been created it can be registered by thread::
 
   thread = Thread('DEMO', 'demo_runner', messages=[echo])
   print thread.get_messages()
 
 Once all the threads were registered within a mapping, all the messages that
 will be available within an OS can be obtained with help of
-Mapping.get_messages().
+:func:`Mapping.get_messages`.
 """
 
 from bb.utils import typecheck
 
 class Field(object):
-  """name - Name of this field, exactly as it appears in message
-  struct/class."""
+  """This class describes a single message field.
+
+  :param name: A string that represents a name of the field, exactly as it
+    appears in message struct/class.
+  :param size: Field size in bytes.
+  """
 
   def __init__(self, name, size=0):
     if not typecheck.is_string(name):
@@ -66,7 +70,7 @@ class Message(object):
   string and a set of fields, where each field described by class Field.
   """
 
-  Field = Field
+  field_type = Field
 
   def __init__(self, label, fields=[]):
     self._label = None
@@ -76,32 +80,53 @@ class Message(object):
     if fields:
       self.set_fields(fields)
 
+  def __str__(self):
+    return '%s[label=%s, byte_size=%d, fields=(%s)]' % \
+        (self.__class__.__name__, self.get_label(), self.get_byte_size(),
+         ','.join([_.name for _ in self._fields]))
+
   def get_byte_size(self):
+    """Returns total message size in bytes.
+
+    :returns: An integer.
+    """
     return sum([field.size for field in self.get_fields()])
 
   def get_label(self):
+    """Returns message label."""
     return self._label
 
   def set_label(self, label):
+    """Set message label.
+
+    :param label: A string that represents message label.
+
+    :raises: TypeError
+    """
     if not typecheck.is_string(label):
       raise TypeError('`label` has to be a string')
     self._label = label
 
   def get_fields(self):
+    """Returns a list of message fields.
+
+    :returns: A list of :class:`Field` instances.
+    """
     return self._fields
 
   def set_fields(self, fields):
+    """Sets message fields.
+
+    :param fields: A list of :class:`Field` instances.
+
+    :raises: TypeError
+    """
     self._fields = []
     if not typecheck.is_list(fields) and not typecheck.is_tuple(fields):
       raise TypeError("`fields` has to be list or tuple: %s" % fields)
     for field in fields:
       if typecheck.is_list(field) or typecheck.is_tuple(field):
-        field = self.Field(field[0], field[1])
+        field = self.field_type(field[0], field[1])
       elif not isinstance(field, self.Field):
-        field = self.Field(field)
+        field = self.field_type(field)
       self._fields.append(field)
-
-  def __str__(self):
-    return '%s[label=%s, byte_size=%d, fields=(%s)]' % \
-        (self.__class__.__name__, self.get_label(), self.get_byte_size(),
-         ','.join([_.name for _ in self._fields]))
