@@ -17,7 +17,7 @@
 import networkx
 
 from bb.app.hardware import primitives
-from bb.app.meta_os.drivers import Driver
+from bb.app.os.drivers import Driver
 from bb.utils import typecheck
 
 class Sketch(object):

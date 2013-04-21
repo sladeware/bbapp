@@ -3,6 +3,13 @@
 # http://www.bionicbunny.org/
 # Copyright (c) 2013 Sladeware LLC
 
+"""The build command allows you to build your application as follows::
+
+   $ b3 build [:target]
+
+, where ``:target`` is a label name inside your BUILD script.
+"""
+
 from __future__ import print_function
 
 import sys
@@ -20,10 +27,7 @@ DEFAULT_TARGET = ":all"
 logger = logging.get_logger("bb")
 
 class Build(Command):
-  """This class represents build command:
-
-  $ b3 build [:target]
-  """
+  """This class represents build command."""
 
   def __init__(self, root_dir, parser, argv):
     Command.__init__(self, root_dir, parser, argv)

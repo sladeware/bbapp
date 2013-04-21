@@ -25,6 +25,10 @@ class Board(Device):
   same, depending on the board. A board is a piece of hardware that performs
   computation within its processors. Other supporting hardware may be present on
   the board, but BB does not explicitly refer to them.
+
+  .. todo::
+     Can we move `processors` to `elements` and then just check for Processor
+     based elements?
   """
 
   def __init__(self, elements=[], processors=[]):
@@ -36,6 +40,11 @@ class Board(Device):
       self.add_elements(elements)
 
   def add_processors(self, processors):
+    """Registeres processors.
+
+    :param processors: A list of
+      :class:`~bb.app.hardware.devices.processors.processor.Processor` instances.
+    """
     if not typecheck.is_sequence(processors):
       raise TypeError('Must be a sequence')
     for processor in processors:

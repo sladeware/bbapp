@@ -124,6 +124,12 @@ class CustomCCompiler(Compiler):
     self._output_dir = path
 
   def get_output_dir(self):
+    """Returns path to output directory.
+
+    .. todo:: Always returns path to b3 build directory. Fix this.
+
+    :returns: A string that represents directory path.
+    """
     if self._output_dir:
       return self._output_dir
     return bb.config.user_settings.get("b3", "builddir")
@@ -189,8 +195,12 @@ class CustomCCompiler(Compiler):
     return None
 
   def add_include_dirs(self, pathes):
-    """Add a list of dirs 'pathes' to the list of directories that will be
-    searched for header files. See :func:`CCompiler.add_include_dir`.
+    """Add a list of dirs `pathes` to the list of directories that will be
+    searched for header files. See :func:`add_include_dir`.
+
+    :param pathes: A list of strings.
+
+    :raises: TypeError
     """
     if not typecheck.is_list(pathes):
       raise TypeError()

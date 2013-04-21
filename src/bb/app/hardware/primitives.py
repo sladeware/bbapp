@@ -49,8 +49,7 @@ class Primitive(object):
 
   Now people will be able to define the weight of the primitive::
 
-    print primitive.properties.weight
-    # or primitive.properties["weight"]
+    print primitive.properties.weight # or primitive.properties["weight"]
   """
 
   DESIGNATOR_FORMAT = "P%d"
@@ -83,17 +82,17 @@ class Primitive(object):
 
   def clone(self):
     """Creates and returns a copy of this object. The default implementation
-    returns a so-called "shallow" copy: It creates a new instance of the same
+    returns a so-called *shallow* copy: It creates a new instance of the same
     class and then copies the field values (including object references) from
-    this instance to the new instance. A "deep" copy, in contrast, would also
+    this instance to the new instance. A *deep* copy, in contrast, would also
     recursively clone nested objects.
+
+    :returns: A :class:`Primitive` derived instance.
     """
     clone = self.__class__()
     for k, v in self.__dict__.iteritems():
       setattr(clone, k, v)
     return clone
-
-  #designator
 
   def get_designator_format(self):
     """Defines the format string to be used with the part designator. A
@@ -101,11 +100,13 @@ class Primitive(object):
     schematic (circuit diagram) or on a printed circuit board (PCB). The
     reference designator usually consists of one or two letters followed by a
     number, e.g. R13, C1002.
+
+    :returns: A string that represents designator format.
     """
     return self._designator_format
 
   def generate_designator(self, counter=0):
-    """Generate a new designator and set it as the current one by using
+    """Generates a new designator and set it as the current one by using
     :func:`set_designator`. Return new designator. Usually generator uses
     designator format and `counter` that represents the number of relatives.
     """
@@ -117,11 +118,11 @@ class Primitive(object):
     self._designator_format = frmt
 
   def get_designator(self):
-    """Return designator value.
+    """Returns designator value.
 
     Designator is the name of a part on a printed circuit by convention
     beginning with one or two letters followed by a numeric value. The letter
-    designates the class of component; eg. "Q" is commonly used as a prefix for
+    designates the class of component; eg. `Q` is commonly used as a prefix for
     transistors.
 
     It is very important to clearly understand the importance of the reference
@@ -129,20 +130,26 @@ class Primitive(object):
     alphanumeric reference designator is used to uniquely identify each part. A
     given circuit might have ten 1.0k resistors used in different
     locations. Each of these resistors is given a unique reference designator,
-    for example, Rl, R5, and R7. In addition to the schematic, the reference
-    designators also appear on the PCB legend silkscreen, assembly drawing, and
-    bill of materials. Manufacturing uses the reference designators to determine
-    where to stuff parts on the board. Field service uses them to identify and
-    replace failed parts.
+    for example, ``Rl``, ``R5``, and ``R7``. In addition to the schematic, the
+    reference designators also appear on the PCB legend silkscreen, assembly
+    drawing, and bill of materials. Manufacturing uses the reference designators
+    to determine where to stuff parts on the board. Field service uses them to
+    identify and replace failed parts.
 
-    See also :func:`generate_designator`.
+    .. seealso:: :func:`generate_designator`.
+
+    :returns: A string that represents primitive's designator.
     """
     return self._designator
 
-  def set_designator(self, text):
-    """Sets designator manually."""
-    # TODO(team): designator should be unique within its graph
-    self._designator = text
+  def set_designator(self, name):
+    """Sets designator manually.
+
+    .. todo:: Designator should be unique within its graph.
+
+    :param name: A string that represents designator name.
+    """
+    self._designator = name
     return self
 
   def get_id(self):
@@ -155,8 +162,6 @@ class Primitive(object):
   def id(self):
     return self.get_id()
 
-  #properties
-
   @property
   def properties(self):
     return self._properties
@@ -168,11 +173,10 @@ class Primitive(object):
       self.add_property(property_)
 
   def add_property(self, *property_):
-    """Add a new property for the primitive. Primitive can be described with
+    """Adds a new property for the primitive. Primitive can be described with
     help of class Property or with tuple::
 
-      primitive.add_property("name", "Foo")
-      # or primitive.properties.name = "Foo"
+      primitive.add_property("name", "Foo") # or primitive.properties.name = "Foo"
 
     or::
 
@@ -189,7 +193,7 @@ class Primitive(object):
     self._properties[name] = value
 
   def has_property(self, name):
-    """Return whether or not the primitive has a property `property_`. The
+    """Returns whether or not the primitive has a property `property_`. The
     `property_` can be defined as a string or instance of :class:`Property`
     class.
     """

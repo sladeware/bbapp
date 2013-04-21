@@ -31,11 +31,14 @@ class P8X32A_QuickStartBoard(Board):
 
   def __init__(self):
     Board.__init__(self)
-    # TODO(team): fix the problem with processors
     self.add_processor(PropellerP8X32A().set_designator("U1"))
     # Add LED's and button's
     self.add_elements([LED().set_designator("D%d" % i) for i in range(1, 9)])
     self.add_elements([Button().set_designator("B%d" % i) for i in range(1, 9)])
 
   def get_processor(self):
+    """P8X32A QuickStartBoard has only one processor. Returns this processor.
+
+    :returns: An :class:`~bb.app.hardware.devices.processors.propeller_p8x32.PropellerP8X32A` instance.
+    """
     return self.get_processors()[0]

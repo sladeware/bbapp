@@ -26,9 +26,9 @@ from processor import Processor, Core
 from bb.utils import typecheck
 
 class PropellerCore(Core):
-  """Parallax Propeller processor's core/cog.
+  """This class represents Parallax Propeller processor's core/cog.
 
-  A "cog" is a CPU contained within the Propeller processor. Cogs are designed
+  A `cog` is a CPU contained within the Propeller processor. Cogs are designed
   to run independently and concurrently within the same silicon die. They have
   their own internal memory, configurable counters, video generators and access
   to I/O pins as well as the system clock. All the cogs in the processor share
@@ -45,7 +45,7 @@ class PropellerCore(Core):
 PropellerCog = PropellerCore
 
 class PropellerP8X32A(Processor):
-  """Parallax Propeller P8X32A processor.
+  """This class represents Parallax Propeller P8X32A processor.
 
   The Parallax Propeller P8X32A family of microcontrollers contains eight cogs
   (a.k.a BBOS cores). Its system clock runs up to 80MHz.

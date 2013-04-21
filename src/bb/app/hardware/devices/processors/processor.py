@@ -19,6 +19,7 @@ from bb.app.hardware.devices import Device
 from bb.utils import typecheck
 
 class Core(primitives.ElectronicPrimitive):
+  """This class represents processor's core."""
 
   designator_format = "CORE%d"
 

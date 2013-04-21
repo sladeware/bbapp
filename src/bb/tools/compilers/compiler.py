@@ -31,8 +31,7 @@ class Compiler(executable.ExecutableWrapper):
   default_output_filename = None
 
   def __init__(self, verbose=0, files=[], dry_run=False):
-    executable.ExecutableWrapper.__init__(self, verbose=verbose,
-                                          dry_run=dry_run)
+    executable.ExecutableWrapper.__init__(self, verbose=verbose, dry_run=dry_run)
     # A common output directory for objects, libraries, etc.
     self._output_dir = ""
     self._output_filename = ""
@@ -41,11 +40,17 @@ class Compiler(executable.ExecutableWrapper):
       self.add_files(files)
 
   def get_files(self):
-    """Returns list of source files."""
+    """Returns list of source files.
+
+    :returns: A list of strings.
+    """
     return self._files
 
   def add_files(self, pathes):
-    """Adds files from the list."""
+    """Adds files from the list.
+
+    :param pathes: A list of strings.
+    """
     if not typecheck.is_sequence(pathes):
       raise TypeError("'files' must be a sequence.")
     for path in pathes:
@@ -54,6 +59,12 @@ class Compiler(executable.ExecutableWrapper):
   def add_file(self, path):
     """Adds file to the list of files. The path will be normalized by using
     :func:`os.path.abspath`.
+
+    :param path: A string that represents file path.
+
+    :returns: A normalized string path.
+
+    :raises: TypeError
     """
     if typecheck.is_string(path):
       if not path_utils.exists(path):
@@ -83,10 +94,11 @@ class Compiler(executable.ExecutableWrapper):
       raise TypeError("Unknown path type '%s' of '%s'" % (type(path), path))
 
   def get_language(self, *arg_list, **arg_dict):
-    raise NotImplemented
+    raise NotImplementedError
 
   def compile(self, *arg_list, **arg_dict):
-    raise NotImplemented
+    """Start compilation process."""
+    raise NotImplementedError
 
   def set_output_filename(self, path):
     """Set output file name."""

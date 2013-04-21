@@ -21,7 +21,7 @@
 processes, threads, queues and pools is determined at compile time. Thereby
 permitting system integrators to cleanly separate the concept of what the
 software does and where it does it. This mapping is represented by class
-:class:`bb.app.mapping.Mapping`.
+:class:`Mapping`.
 
 Compile time mapping is critical for tuning a system based on application
 requirements. It is useful when faced with an existing software application that
@@ -31,7 +31,7 @@ mapping to system integrators that need to incorporate new software features as
 applications inevitably grow in complexity.
 """
 
-from bb.app.meta_os import OS, Thread, Port
+from bb.app.os import OS, Thread, Port
 from bb.app.hardware.devices.processors import Processor
 from bb.utils import typecheck
 from bb.utils import logging
@@ -42,6 +42,12 @@ class ThreadDistributor(object):
   """Base class for thread distributors."""
 
   def distribute(self, threads, processor):
+    """Distributes threads over the processor's cores.
+
+    :param threads: A list of :class:`~bb.app.os.thread.Thread` instances.
+    :param processor: A
+      :class:`~bb.app.hardware.devices.processors.processor.Processor` instance.
+    """
     raise NotImplementedError()
 
   def __call__(self, threads, processor):
@@ -53,7 +59,15 @@ class RoundrobinThreadDistributor(ThreadDistributor):
   """
 
   def distribute(self, threads, processor):
-    """Distributes `threads` over `processor`'s cores."""
+    """Distributes `threads` over `processor`'s cores.
+
+    :param threads: A list of :class:`~bb.app.os.thread.Thread` instances.
+    :param processor: A
+      :class:`~bb.app.hardware.devices.processors.processor.Processor` instance.
+
+    :returns: A `dict` instance, where key is a core and value is a list of
+      :class:`~bb.app.os.thread.Thread` instances.
+    """
     distribution = {}
     for core in processor.get_cores():
       distribution[core] = []
@@ -71,8 +85,21 @@ class Mapping(object):
   processes, threads, queues and pools is determined at compile time.
 
   .. note::
-  On this moment device drivers for controlled devices will not be
-  added automatically as threads. They should be added manually.
+
+    On this moment device drivers for controlled devices will not be
+    added automatically as threads. They should be added manually.
+
+  :param name: A string that represents mapping's name.
+  :param processor: A
+    :class:`~bb.app.hardware.devices.processors.processor.Processor` instance.
+  :param os_class: A :class:`~bb.app.os.os.OS` class that will be used
+    in os generation process.
+  :param threads: A list of :class:`~bb.app.os.thread.Thread` instances.
+  :param thread_distributor: A :class:`ThreadDistributor` instance that will
+    distribute threads. By default :class:`RoundrobinThreadDistributor` instance
+    will be used.
+  :param autoreg: If ``True``, allows mapping to automatically try to connect to
+    the active :class:`~bb.app.app.Application` instance.
   """
 
   processor = None
@@ -127,6 +154,14 @@ class Mapping(object):
     return self.gen_os(*args, **kwargs)
 
   def set_max_message_size(self, size):
+    """Manually set max message size.
+
+    .. warning::
+
+       Be careful, some messages may not fit this size when set manually.
+
+    :param size: Max message size in bytes.
+    """
     self._max_message_size = size
 
   def get_max_message_size(self):
@@ -134,14 +169,17 @@ class Mapping(object):
     return self._max_message_size
 
   def set_name(self, name):
+    """Set mapping name.
+
+    :param name: A string that will represent mapping name.
+    """
     if not typecheck.is_string(name):
       raise TypeError("name must be string")
     self._name = name
 
   def get_name(self):
+    """Returns mapping's name."""
     return self._name
-
-  #threads
 
   def set_thread_distributor(self, distributor):
     """Sets thread-distributor that will be used in OS generation process."""
@@ -150,18 +188,34 @@ class Mapping(object):
     self._thread_distributor = distributor
 
   def get_thread_distributor(self):
+    """Returns thread distributor.
+
+    :returns: A :class:`ThreadDistributor` instance.
+    """
     return self._thread_distributor
 
   def register_thread(self, thread, name=None):
     """Registers thread by its name. The name has to be unique within this
     mapping. If thread doesn't have a name and it wasn't provided, mapping will
-    try to use its name format (see :func:`Thread.get_name_format`) to generate
-    one.
+    try to use its name format to generate one.
 
-    If the thread has a port, this port will be registered with threads name.
+    If the thread has a port, this port will be registered by thread's name.
+
+    .. seealso:: :func:`~bb.app.os.thread.Thread.get_name_format`
+
+    .. todo::
+
+      Improve name generation within a mapping; it has to be unique.
+
+    :param thread: A :class:`~bb.app.os.thread.Thread` instance.
+    :param name: Another name to register `thread`.
+
+    :returns: A :class:`~bb.app.os.thread.Thread` instance.
+
+    :raises: :class:`TypeError`
     """
     if not isinstance(thread, Thread):
-      raise TypeError("Must be derived from bb.app.meta_os.Thread: %s", thread)
+      raise TypeError("Must be derived from bb.app.os.Thread: %s", thread)
     if name and not typecheck.is_string(name):
       raise TypeError()
     if name:
@@ -173,13 +227,12 @@ class Mapping(object):
           logger.warning("Thread %s doesn't have a name and the format cannot"
                          "be obtained to generate one." % thread)
           return
-        # TODO(team): improve name generation within a mapping; it has to be
-        # unique.
         thread.set_name(frmt % self.get_num_threads())
       name = thread.get_name()
     if thread.has_port():
       self.register_port(thread.get_port(), name)
     self._threads[name] = thread
+    return thread
 
   def get_thread(self, name):
     if not typecheck.is_string(name):
@@ -187,26 +240,44 @@ class Mapping(object):
     return self._threads.get(name, None)
 
   def register_threads(self, threads):
+    """Register threads.
+
+    :param threads: A list of :class:`Thread` instances.
+    :raises: :class:`TypeError`
+    """
+    if not typecheck.is_list(threads):
+      raise TypeError()
     for thread in threads:
       self.register_thread(thread)
 
   def get_num_threads(self):
-    """Returns number of thread within this mapping."""
+    """Returns number of threads within this mapping."""
     return len(self.get_threads())
 
   def get_threads(self):
     """Returns complete list of threads handled by this mapping."""
     return self._threads.values()
 
-  def set_simulation_mode(self):
+  def enable_simulation_mode(self):
+    """Enables simulation mode."""
     self._is_simulation_mode = True
 
+  def disable_simulation_mode(self):
+    """Disables simulation mode."""
+    self._is_simulation_mode = False
+
   def is_simulation_mode(self):
+    """Returns whether or not this mapping is in simulation mode.
+
+    :returns: ``True`` or ``False``.
+    """
     return self._is_simulation_mode
 
   def get_processor(self):
-    """Returns :class:`bb.app.hardware.devices.processors.processor.Processor`
-    instance.
+    """Returns controlled processor.
+
+    :returns: A :class:`~bb.app.hardware.devices.processors.processor.Processor`
+      instance.
     """
     return self._processor
 
@@ -225,8 +296,10 @@ class Mapping(object):
 
   def is_processor_defined(self):
     """Returns whether or not a processor was defined. Returns ``True`` if the
-    :class:`bb.hardware.devices.processors.processor.Processor` instance was
-    defined, or ``False`` otherwise.
+    :class:`~bb.app.hardware.devices.processors.processor.Processor` instance
+    was defined, or ``False`` otherwise.
+
+    :returns: ``True`` or ``False``.
     """
     return not not self.get_processor()
 
@@ -235,7 +308,7 @@ class Mapping(object):
     instance.
     """
     if not issubclass(os_class, OS):
-      raise TypeError("Must be derived from bb.app.meta_os.OS class: %s"
+      raise TypeError("Must be derived from bb.app.os.OS class: %s"
                       % os_class)
     self._os_class = os_class
 
@@ -243,8 +316,9 @@ class Mapping(object):
     return self._os_class
 
   def gen_os(self):
-    """Generates OS based on mapping analysis. Returns
-    :class:`bb.app.meta_os.meta_os.OS` based instance.
+    """Generates OS based on mapping analysis.
+
+    :returns: An :class:`~bb.app.os.os.OS` derived instance.
     """
     logger.info("Process mapping %s" % self.get_name())
     processor = self.get_processor()
@@ -271,9 +345,15 @@ class Mapping(object):
     processor.set_os(os)
     return os
 
-  #ports
-
   def register_port(self, port, name):
+    """Registers port within this mapping by the given name.
+
+    :param port: A :class:`Port` derived instance.
+    :param name: A string that represents name to which this port will be
+      associated.
+
+    :raises: TypeError
+    """
     if not typecheck.is_string(name):
       raise TypeError("name must be a string")
     if not isinstance(port, Port):
@@ -281,4 +361,8 @@ class Mapping(object):
     self._ports[name] = port
 
   def get_ports(self):
+    """Returns a list of ports registered within this mapping.
+
+    :returns: A list of :class:`~bb.app.os.port.Port` instances.
+    """
     return self._ports.values()
