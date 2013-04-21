@@ -23,8 +23,10 @@ microprocessors.
 
 from __future__ import print_function
 
-from kernel import Kernel
-from drivers import Driver
+from bb.app.os.kernel import Kernel
+from bb.app.os.drivers import Driver
+from bb.app.os.thread import Thread
+from bb.app.os.port import Port
 from bb.app.hardware.devices.processors import Processor
 
 class OS(object):
@@ -124,7 +126,7 @@ class OS(object):
   def get_threads(self):
     """Returns threads from all the kernels.
 
-    :returns: A list of :class:`bb.app.meta_os.thread.Thread` instances.
+    :returns: A list of :class:`bb.app.os.thread.Thread` instances.
     """
     threads = []
     for kernel in self.get_kernels():

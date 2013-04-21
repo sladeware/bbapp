@@ -18,12 +18,12 @@ events are handled within the driver, with notification sent as required to
 waiting threads.
 
 A :class:`Driver` is extended version of
-:class:`~bb.app.meta_os.messenger.Messenger`. This messenger demultiplexes
+:class:`~bb.app.os.messenger.Messenger`. This messenger demultiplexes
 messages into commands/payload and passes them to the driver core. It bundles
 commands/payloads and sends to the thread requested by the driver core.
 """
 
-from bb.app.meta_os.messenger import Messenger
+from bb.app.os.messenger import Messenger
 
 class Driver(Messenger):
   """This class represents a driver."""

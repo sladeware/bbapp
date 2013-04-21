@@ -127,6 +127,6 @@ class Message(object):
     for field in fields:
       if typecheck.is_list(field) or typecheck.is_tuple(field):
         field = self.field_type(field[0], field[1])
-      elif not isinstance(field, self.Field):
+      elif not isinstance(field, self.field_type):
         field = self.field_type(field)
       self._fields.append(field)

@@ -15,7 +15,7 @@
 # Author: Oleksandr Sviridenko
 
 from bb.utils.testing import unittest
-from .messenger import Message, Messenger
+from bb.app.os.messenger import Message, Messenger
 
 class MessageTest(unittest.TestCase):
 
@@ -27,7 +27,7 @@ class MessageTest(unittest.TestCase):
     msg = Message("SERIAL_OPEN", ("rx", "tx"))
     self.assert_equal(2, len(msg.get_fields()))
     for field in msg.get_fields():
-      self.assert_true(isinstance(field, Message.Field))
+      self.assert_true(isinstance(field, Message.field_type))
     for i, name, size in ((0, "rx", 0), (1, "tx", 0)):
       self.assert_equal(name, msg.get_fields()[i].name)
       self.assert_equal(size, msg.get_fields()[i].size)

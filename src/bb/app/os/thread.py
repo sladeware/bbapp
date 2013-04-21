@@ -36,8 +36,8 @@ Now we have a thread called ``HELLO`` that handles our function
 point` (or simply `runner`).
 """
 
-from port import Port
-from message import Message
+from bb.app.os.port import Port
+from bb.app.os.message import Message
 from bb.utils import typecheck
 
 class Thread(object):
@@ -145,7 +145,7 @@ class Thread(object):
 
   def set_port(self, port):
     if not port or not isinstance(port, Port):
-      raise TypeError("Port must be derived from bb.app.meta_os.port.Port: %s" %
+      raise TypeError("Port must be derived from bb.app.os.port.Port: %s" %
                       port)
     if self.has_port():
       self.remove_port()
@@ -156,6 +156,7 @@ class Thread(object):
     self._port = None
 
   def get_port(self):
+    """Returns port used by this thread for communication purposes."""
     return self._port
 
   def __str__(self):

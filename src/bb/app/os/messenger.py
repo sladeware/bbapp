@@ -45,13 +45,13 @@ processing.
 
 from bb.utils import logging
 from bb.utils import typecheck
-from thread import Thread
-from bb.app.meta_os.message import Message
+from bb.app.os.thread import Thread
+from bb.app.os.message import Message
 
 logger = logging.get_logger("bb")
 
 class MessageHandler(object):
-  """This class represents :class:`~bb.app.meta_os.message.Message`
+  """This class represents :class:`~bb.app.os.message.Message`
   handler. This handler provides a description to BBOS of how to handle specific
   message.
 

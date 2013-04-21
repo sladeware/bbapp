@@ -15,24 +15,30 @@
 #
 # Author: Oleksandr Sviridenko
 
-"""A kernel represents a non-blocking computational resource, which is in most
-cases simply a core of a microcontroller. Threads run within a kernel using a
-customizable time sharing scheduler algorithm.
-
-The kernel is represented by :class:`bb.app.os.kernel.Kernel`.
+"""A kernel is described by :class:`Kernel` and represents a non-blocking
+computational resource, which is in most cases simply a core of a
+microcontroller. Threads run within a kernel using a customizable time sharing
+scheduler algorithm.
 """
 
 from __future__ import print_function
 
 from bb.utils import typecheck
-from ..port import Port
-from ..thread import Thread
-from schedulers import Scheduler, StaticScheduler
+from bb.app.os.port import Port
+from bb.app.os.thread import Thread
+from bb.app.os.kernel.schedulers import Scheduler, StaticScheduler
 
 class Kernel(object):
-  """The heart of BB operating system."""
+  """The heart of BB operating system.
 
-  def __init__(self, core=None, threads=[], scheduler=StaticScheduler()):
+  :param core: A
+    :class:`~bb.app.hardware.devices.processors.processor.Core` instance.
+  :param threads: A list of :class:`~bb.app.os.thread.Thread` instances.
+  :param scheduler: A :class:`~bb.app.os.kernel.schedulers.scheduler.Scheduler`
+    instance.
+  """
+
+  def __init__(self, core=None, threads=[], scheduler=None):
     self._core = None
     self._ports = dict()
     self._threads = dict()
@@ -44,6 +50,8 @@ class Kernel(object):
       self.register_threads(threads)
     if scheduler:
       self.set_scheduler(scheduler)
+    else:
+      self._scheduler = StaticScheduler()
     if core:
       self.set_core(core)
 
@@ -55,9 +63,15 @@ class Kernel(object):
     return self.get_threads()
 
   def set_core(self, core):
+    """Selects the core on which this kernel will be executed.
+
+    :param core: A :class:`~bb.app.hardware.devices.processors.processor.Core` instance.
+    :raises: TypeError
+    """
     self._core = core
 
   def get_core(self):
+    """Returns core on which the kernel will be executed."""
     return self._core
 
   @property
@@ -65,13 +79,18 @@ class Kernel(object):
     return self.get_core()
 
   def set_scheduler(self, scheduler):
-    """Select scheduler."""
+    """Selects scheduler that will manage threads.
+
+    :param scheduler: A :class:`~bb.app.os.kernel.schedulers.scheduler.Scheduler` instance.
+    :raises: TypeError
+    """
     if not isinstance(scheduler, Scheduler):
-      raise Exception("Scheduler '%s' must be bb.os.kernel.Scheduler "
+      raise TypeError("Scheduler '%s' must be bb.os.kernel.Scheduler "
                       "sub-class" % scheduler)
     self._scheduler = scheduler
 
   def get_scheduler(self):
+    """Returns used scheduler."""
     return self._scheduler
 
   def get_threads(self):

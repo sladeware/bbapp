@@ -3,7 +3,7 @@
 #
 # Author: Oleksandr Sviridenko
 
-from bb.app.meta_os.drivers.driver import Driver
+from bb.app.os.drivers.driver import Driver
 
 class ShMemDriver(Driver):
 

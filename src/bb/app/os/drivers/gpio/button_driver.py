@@ -22,12 +22,12 @@
 The following table describes messages and their handlers supported by the
 button driver:
 
-====================  ======================  ==============
-Action                Message ID              Message Fields
-====================  ======================  ==============
+====================  =======================  ==============
+Action                Message ID               Message Fields
+====================  =======================  ==============
 is_button_pressed     **IS_BUTTON_PRESSED**    pin (1 byte)
-are_buttons_pressed   **ARE_BUTTON_PRESSED**   mask (4 bytes)
-====================  ======================  ==============
+are_buttons_pressed   **ARE_BUTTONS_PRESSED**  mask (4 bytes)
+====================  =======================  ==============
 
 Small example. Suppose you have a button driver ``BUTTON_DRIVER``. The following
 code snippet shows how to write a simple C runner template ``my_runner`` that
@@ -45,7 +45,7 @@ will check for active buttons:
      struct bbos_message* msg;
      uint16_t mask;
      if ((msg = bbos_receive_message()) != NULL) {
-       if (msg->label == ARE_BUTTON_PRESSED) {
+       if (msg->label == ARE_BUTTONS_PRESSED) {
          mask = *((uint16_t*)msg->payload);
          /* Do something with active buttons... */
        }
@@ -60,12 +60,12 @@ will check for active buttons:
      }
    }
 
-Lines 9 and 18 shows how to receive and send ``ARE_BUTTON_PRESSED`` message
+Lines 9 and 18 shows how to receive and send ``ARE_BUTTONS_PRESSED`` message
 respectively. Line 10 shows how to read a mask of pressed buttons.
 
 """
 
-from bb.app.meta_os import Driver, Message
+from bb.app.os import Driver, Message
 
 class ButtonDriver(Driver):
   """This class represents button driver."""

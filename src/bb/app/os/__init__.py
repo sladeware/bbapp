@@ -15,10 +15,10 @@
 #
 # Author: Oleksandr Sviridenko
 
-from meta_os import OS
-from kernel import Kernel
-from thread import Thread
-from port import Port
-from message import Message
-from messenger import Messenger
-from drivers.driver import Driver
+from bb.app.os.os import OS
+from bb.app.os.kernel import Kernel
+from bb.app.os.thread import Thread
+from bb.app.os.port import Port
+from bb.app.os.message import Message
+from bb.app.os.messenger import Messenger
+from bb.app.os.drivers.driver import Driver

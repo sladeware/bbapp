@@ -14,25 +14,25 @@
 #
 # Author: Oleksandr Sviridenko
 
-from bb.app import meta_os
+from bb.app import os
 from bb.utils.testing import unittest
 
 class ThreadTest(unittest.TestCase):
 
   def test_port(self):
-    t0 = meta_os.Thread("T0")
+    t0 = os.Thread("T0")
     self.assert_false(t0.has_port())
-    t0.set_port(meta_os.Port(10))
+    t0.set_port(os.Port(10))
     self.assert_true(t0.has_port())
     t0.remove_port()
     self.assert_false(t0.has_port())
 
   def test_name(self):
-    t0 = meta_os.Thread("T0")
+    t0 = os.Thread("T0")
     self.assert_equal(t0.get_name(), "T0")
 
   def test_runner(self):
-    t0 = meta_os.Thread("T0", "old_hello_world")
+    t0 = os.Thread("T0", "old_hello_world")
     self.assert_equal(t0.get_runner(), "old_hello_world")
     t0.set_runner("new_hello_world")
     self.assert_equal(t0.get_runner(), "new_hello_world")
