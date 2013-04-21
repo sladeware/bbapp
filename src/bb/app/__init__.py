@@ -17,30 +17,8 @@
 #
 # Author: Oleksandr Sviridenko
 
-"""Contains high-level classes encapsulating the overall BB application
-model.
+from __future__ import absolute_import
 
-BB application combines all of the build systems of all of the defined
-processes. Therefore the application includes the models of processes, their
-communication, hardware description, simulation and build specifications. At the
-same time the processes inside of an application can be segmented into
-`clusters`, or a group of CPUs.
-"""
-
-from app import *
-from mapping import Mapping, Thread, Port
-
-def create_application(*args, **kwargs):
-  return Application(*args, **kwargs)
-
-def delete_application(app):
-  Application._unregister_instance(app)
-
-def get_active_application():
-  return Application.get_active_instance()
-
-def idenfity_application(obj=None):
-  return Application.identify_instance(obj)
-
-def create_mapping(*args, **kwargs):
-  return Mapping(*args, **kwargs)
+from bb.app.app import *
+from bb.app.mapping import Mapping, Thread, Port
+from bb.app.os import os

@@ -17,10 +17,13 @@
 
 """Propeller GCC (propgcc) is GCC for the Parallax Propeller Microcontroller.
 
-How to install
+.. note::
 
-Download compiler <http://code.google.com/p/propgcc/downloads/list> and read
-`INSTALL.txt` for further instructions.
+   **How to install**
+
+   Download the latest version of PropGCC compiler
+   <http://code.google.com/p/propgcc/downloads/list> and read `INSTALL.txt`
+   for further instructions.
 """
 
 from bb.tools.compilers.gcc import GCC
@@ -75,6 +78,10 @@ class PropGCC(GCC):
             is placed in the hub. A kernel is run in cog memory to fetch
             instructions from the external memory.
     ======= ================================================================
+
+    :param model: A string that represents model type.
+
+    :raises: TypeError
     """
     if not typecheck.is_string(model):
       raise TypeError("Must be string.")

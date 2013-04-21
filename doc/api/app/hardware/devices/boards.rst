@@ -17,7 +17,7 @@ Boards
    :members:
 
 :mod:`bb.app.hardware.devices.boards.propeller_demo_board` --- PropellerDemoBoard
-================================================================================
+=================================================================================
 
 .. automodule:: bb.app.hardware.devices.boards.propeller_demo_board
    :members:

@@ -1,12 +1,13 @@
-.. _api:
-
-*************************
+*******
 Devices
-*************************
+*******
+
+This package contains all supported devices. All the devices are derived from
+:class:`~bb.app.hardware.devices.device.Device` class.
 
 .. toctree::
    :maxdepth: 2
 
-   device.rst
-   boards.rst
-   processors/index.rst
+   device
+   boards
+   processors/index

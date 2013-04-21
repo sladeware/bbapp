@@ -17,17 +17,9 @@
 #
 # Author: Oleksandr Sviridenko <info@bionicbunny.org>
 
-"""This module describes BB application. An application is defined by a BB model
-and is comprised of a set of processes running on a particular system topology
-to perform work meeting the application's requirements. Each process correnspond
-to the appropriate :class:`bb.app.mapping.Mapping` instance from `mappings`.
+"""This module describes BB application."""
 
-For example, the following simple code snippet prints the current application
-state:
-
-    import bb.app
-    print bb.app.get_active_application()
-"""
+from __future__ import absolute_import
 
 import inspect
 import types
@@ -35,10 +27,8 @@ import os
 
 from bb.utils import typecheck
 from bb.utils import path_utils
-from .imc_network import Network
-from .mapping import Mapping
-
-__all__ = ["Application"]
+from bb.app.imc_network import Network
+from bb.app.mapping import Mapping
 
 SETTINGS_DIR = ".bbapp"
 
@@ -47,9 +37,14 @@ class Application(object):
 
   Normally you don't need to subclass this class.
 
-  `home_dir` represents root directory for the application. If `home_dir` was
-  specified and it's not existed home directory, the new directory will be
-  initialized if `init_home_dir` is `True`.
+  .. todo::
+
+     Connect b3 build directory and application build directory.
+
+  :param home_dir: represents root directory for the application.
+  :param init_home_dir: if `home_dir` was specified and it's not existed home
+         directory, the new directory will be initialized if `init_home_dir` is
+         `True`.
   """
 
   _register = {}
@@ -62,8 +57,6 @@ class Application(object):
       if not self.is_home_dir(home_dir) and init_home_dir:
         self.init_home_dir(home_dir)
       self.set_home_dir(home_dir)
-    #default_build_dir = path_utils.join(self._home_dir, self.__class__.build_dir)
-    #self.set_build_dir(default_build_dir, make=True)
 
   @classmethod
   def _register_instance(cls, app):
@@ -84,17 +77,21 @@ class Application(object):
         % (self.__class__.__name__, self.get_home_dir(),
            self.get_num_mappings())
 
-  #instance_mngmnt
-
   @classmethod
   def get_active_instance(cls):
+    """Returns active application instance. See also
+    :func:`identify_instance`.
+
+    :returns: An :class:`Application` instance.
+    """
     return cls.identify_instance()
 
   @classmethod
   def identify_instance(cls, obj=None):
-    """Identifies or returns last active application instance. If `obj` was
-    provided, returns instance that keeps this object. By default returns
-    :class:`Application` instance that represents active application.
+    """Identifies last active application instance.
+
+    :param obj: Returns instance that keeps this object if such was provided.
+    :returns: An :class:`Application` instance that represents active application.
     """
     src = obj and inspect.getsourcefile(obj) or None
     home_dir = src and cls.find_home_dir(src) or cls.identify_home_dir()
@@ -102,12 +99,11 @@ class Application(object):
       return Application(home_dir=home_dir)
     return cls._register[home_dir]
 
-  #home_dir_mngmnt
-
   @classmethod
   def init_home_dir(cls, home_dir):
-    """Initializes passed home directory if such wasn't already
-    initialized. Returns path to home directory.
+    """Initializes passed home directory if such wasn't already initialized.
+
+    :returns: Path to home directory.
     """
     if not path_utils.exists(home_dir):
       raise IOError("'%s' doesn't exist" % home_dir)
@@ -117,6 +113,11 @@ class Application(object):
 
   @classmethod
   def is_home_dir(cls, path):
+    """Returns whether or not a given path is application home directory.
+
+    :returns: `True` or `False`.
+    :raises: :class:`TypeError`, :class:`IOError`
+    """
     if not typecheck.is_string(path):
       raise TypeError("'path' has to be a string")
     elif not path_utils.exists(path):
@@ -126,7 +127,11 @@ class Application(object):
   @classmethod
   def find_home_dir(cls, path):
     """Finds top directory of an application by a given path and returns home
-    path. Returns None if home direcotry cannot be identified.
+    path. Returns `None` if home direcotry cannot be identified.
+
+    :param path: Path to directory.
+
+    :returns: Path as string or `None`.
     """
     if not typecheck.is_string(path):
       raise TypeError("'path' must be a string")
@@ -153,29 +158,41 @@ class Application(object):
     return cls.find_home_dir(path_utils.realpath(os.curdir)) or os.getcwd()
 
   def set_home_dir(self, home_dir):
+    """Set application home directory. There should be no other applications
+    registered to this home directory.
+
+    :param home_dir: A string that represents path to home directory. The path
+       should exists.
+
+    :raises: :class:`IOError`
+    """
     if not path_utils.exists(home_dir):
-      raise Exception("`%s' doesn't exist" % home_dir)
+      raise IOError("`%s' doesn't exist" % home_dir)
     if self._home_dir:
       self._unregister_instance(self)
     if home_dir in self._register:
-      raise Exception("%s is already using this home dir: %s" %
+      raise IOError("%s is already using this home dir: %s" %
                       (self._register[home_dir], home_dir))
     self._home_dir = home_dir
     self._register_instance(self)
 
   def get_home_dir(self):
-    """Returns home directory"""
-    return self._home_dir
+    """Returns home directory.
 
-  #build_dir
+    :returns: A string that represents path to home directory.
+    """
+    return self._home_dir
 
   def set_build_dir(self, path, make=False):
     """Sets path to the build directory. The build directory will be used to
     store temporary/autogenerated and compiled build-files.
+
+    :param path: Build-directory name.
+    :param make: Whether or not the path needs to be created.
     """
     if not path_utils.exists(path):
       if not make:
-        raise Exception("`%s' doesn't exist" % path)
+        raise IOError("`%s' doesn't exist" % path)
       path_utils.mkpath(path)
     self._build_dir = path
 
@@ -184,18 +201,32 @@ class Application(object):
     return self._build_dir
 
   def get_network(self):
+    """Returns network that represents all the mappings and their relations
+    within this application.
+    """
     return self._network
 
-  #mapping_mngmnt
-
   def gen_default_mapping_name(self, mapping):
+    """Generates a name for a given mapping. This name will be unique within
+    this application. This technique is used by the mapping itself for
+    registration.
+
+    :param mapping: A :class:`~bb.app.mapping.Mapping` instance.
+
+    :returns: A string represented mapping's name.
+
+    :raises: TypeError
+    """
     if not isinstance(mapping, Mapping):
       raise TypeError()
     frmt = mapping.__class__.name_format
     return frmt % self.get_num_mappings()
 
   def get_mappings(self):
-    """Returns list of mappings registered by this application."""
+    """Returns list of mappings registered by this application.
+
+    :returns: A list of :class:`Mapping` instances.
+    """
     return self._network.get_nodes()
 
   def get_num_mappings(self):
@@ -208,8 +239,11 @@ class Application(object):
     return self._network.has_node(mapping)
 
   def add_mapping(self, mapping):
-    """Registers a mapping and adds it to the application network. Returns
-    whether or not the mapping was added.
+    """Registers a mapping and adds it to the application network.
+
+    :param mapping: A :class:`Mapping` instance.
+
+    :returns: Whether or not the mapping was added.
     """
     if self.has_mapping(mapping):
       return False
@@ -217,13 +251,31 @@ class Application(object):
     return True
 
   def add_mappings(self, mappings):
-    """Adds mappings from list `mappings`. See :func:`add_mapping`."""
+    """Adds mappings. See also :func:`add_mapping`.
+
+    :param mappings: A list of :class:`Mapping` instances.
+    """
     if not typecheck.is_list(mappings):
       raise TypeError("'mappings' must be list")
     for mapping in mappings:
       self.add_mapping(mapping)
 
   def create_mapping(self, *args, **kwargs):
+    """Mapping factory, creates and returns a new mapping connected to this
+    application.
+
+    .. note::
+
+       Use :func:`create_mapping` to automatically create a mapping and connect
+       it to the active application. Otherwise you will have to create mapping
+       manually and then use :func:`add_mapping` in order to connect it to
+       specific :class:`Application` instance.
+
+    :param args: A list of arguments.
+    :param kwargs: A dict of key-word arguments.
+
+    :returns: A :class:`~bb.app.mapping.Mapping` instance.
+    """
     fixed_kwargs = dict(**kwargs)
     fixed_kwargs.update(autoreg=False)
     mapping = Mapping(*args, **fixed_kwargs)
@@ -241,3 +293,31 @@ class Application(object):
   def remove_mappings(self):
     for mapping in self.get_mappings():
       self.remove_mapping(mapping)
+
+def create_application(*args, **kwargs):
+  return Application(*args, **kwargs)
+
+def delete_application(app):
+  Application._unregister_instance(app)
+
+def get_active_application():
+  """Returns active application. See :func:`Application.get_active_instance` for
+  details.
+
+  :returns: An :class:`Application` instance.
+  """
+  return Application.get_active_instance()
+
+def idenfity_application(obj=None):
+  """Identifies active application or an application that manages a given
+  object.
+
+  :returns: An :class:`Application` instance.
+  """
+  return Application.identify_instance(obj)
+
+def create_mapping(*args, **kwargs):
+  """Creates a mapping.
+
+  :returns: A :class:`~bb.app.mapping.Mapping` instance."""
+  return Mapping(*args, **kwargs)

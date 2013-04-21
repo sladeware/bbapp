@@ -2,8 +2,12 @@
 Tools
 *****
 
-.. toctree::
+This package contains the BB build (**B3**) and load tools as well as EDA tools.
 
-   compilers/index.rst
-   edas/index.rst
-   loaders/index.rst
+.. toctree::
+   :maxdepth: 1
+
+   b3/index
+   compilers/index
+   edas/index
+   loaders/index

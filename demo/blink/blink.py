@@ -6,7 +6,7 @@
 from bb import app as bbapp
 from bb.app import Mapping, Thread, Port
 from bb.app.hardware.devices.boards import P8X32A_QuickStartBoard
-from bb.app.meta_os.drivers.gpio import ButtonDriver
+from bb.app.os.drivers.gpio import ButtonDriver
 
 board = P8X32A_QuickStartBoard()
 processor = board.get_processor()

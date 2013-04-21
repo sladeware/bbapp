@@ -5,7 +5,7 @@
 #
 # Author: Oleksandr Sviridenko
 
-from bb.app.meta_os.drivers.onewire.slaves import DS18B20Driver
+from bb.app.os.drivers.onewire.slaves import DS18B20Driver
 from bb.app.hardware.devices import Device
 
 class DS18B20(Device):

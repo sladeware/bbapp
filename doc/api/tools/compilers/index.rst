@@ -2,9 +2,12 @@
 Compilers
 *********
 
+This package represents supported compilers.
+
 .. toctree::
 
-   compiler.rst
-   catalina.rst
-   custom_c_compiler.rst
-   propgcc.rst
+   catalina
+   cc
+   compiler
+   custom_c_compiler
+   propgcc
