@@ -33,52 +33,11 @@ applications inevitably grow in complexity.
 
 from bb.app.os import OS, Thread, Port
 from bb.app.hardware.devices.processors import Processor
+from bb.app.thread_distributors import ThreadDistributor, RoundrobinThreadDistributor
 from bb.utils import typecheck
 from bb.utils import logging
 
 logger = logging.get_logger("bb")
-
-class ThreadDistributor(object):
-  """Base class for thread distributors."""
-
-  def distribute(self, threads, processor):
-    """Distributes threads over the processor's cores.
-
-    :param threads: A list of :class:`~bb.app.os.thread.Thread` instances.
-    :param processor: A
-      :class:`~bb.app.hardware.devices.processors.processor.Processor` instance.
-    """
-    raise NotImplementedError()
-
-  def __call__(self, threads, processor):
-    return self.distribute(threads, processor)
-
-class RoundrobinThreadDistributor(ThreadDistributor):
-  """Default thread distributor provides round-robin distribution of threads
-  between all cores within the processors.
-  """
-
-  def distribute(self, threads, processor):
-    """Distributes `threads` over `processor`'s cores.
-
-    :param threads: A list of :class:`~bb.app.os.thread.Thread` instances.
-    :param processor: A
-      :class:`~bb.app.hardware.devices.processors.processor.Processor` instance.
-
-    :returns: A `dict` instance, where key is a core and value is a list of
-      :class:`~bb.app.os.thread.Thread` instances.
-    """
-    distribution = {}
-    for core in processor.get_cores():
-      distribution[core] = []
-    c = 0
-    for thread in threads:
-      if not isinstance(thread, Thread):
-        raise TypeError("thread must be derived from Thread")
-      core = processor.get_cores()[c]
-      c = (c + 1) % len(processor.get_cores())
-      distribution[core].append(thread)
-    return distribution
 
 class Mapping(object):
   """The mapping of hardware resources to software runtime components such as
