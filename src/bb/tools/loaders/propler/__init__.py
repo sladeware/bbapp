@@ -43,12 +43,13 @@ from bb.tools.loaders.propler.disasm import *
 from bb.tools.loaders.propler.terminal import *
 from bb.tools.loaders.propler.uploader import *
 
-def terminal_mode(port="/dev/ttyUSB0"):
+def terminal_mode(port="/dev/ttyUSB0", baudrate=115200):
   """Enter propler to terminal mode."""
-  print "Enter to terminal mode"
+  print "Enter to terminal mode on '%s' with baudrate=%d" \
+      % (port, baudrate)
   print "_" * 70
   print
-  term = Terminal(port)
+  term = Terminal(port, baudrate=baudrate)
   term.start()
   print
   print "\r", "_" * 70
