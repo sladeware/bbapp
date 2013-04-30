@@ -80,7 +80,8 @@ class Thread(object):
     :raises: TypeError
     """
     if not isinstance(message, Message):
-      raise TypeError('message has to be derived from class Message.')
+      raise TypeError('message has to be derived from class Message: %s' \
+                        % type(message))
     if message.get_label() in self._messages:
       return False
     self._messages[message.get_label()] = message
