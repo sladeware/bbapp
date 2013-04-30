@@ -1,5 +1,6 @@
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
+# Copyright (c) 2013 Sladeware LLC
+#
+# Author: Oleksandr Sviridenko
 
 from .board import Board, Breadboard, Protoboard
 from .propeller_demo_board import PropellerDemoBoard
