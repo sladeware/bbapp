@@ -14,6 +14,7 @@ welcome to open a ticket for reporting the problem.*
 .. toctree::
    :maxdepth: 2
 
+   object
    app/index
    tools/index
    utils/index

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+#
+# Copyright (c) 2012-2013 Sladeware LLC
+# Author: Oleksandr Sviridenko
 
 """This is a console application that provides a small terminal
 application."""
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksandr Sviridenko'
 __all__ = ['Terminal']
 
 import os
@@ -85,6 +86,7 @@ else:
 
 EXIT_CHARACTER = chr(3)
 
+
 class Terminal(object):
   """Propler terminal for serial communications."""
 
@@ -124,6 +126,8 @@ class Terminal(object):
       try:
         while self.terminal.is_alive():
           c = self.terminal.sio.read()
+          if c == '\0': # does nothing
+            continue
           sys.stdout.flush()
           sys.stdout.write(c)
       except serial.SerialException, e:
@@ -133,8 +137,8 @@ class Terminal(object):
         self.terminal.stop()
         raise
 
-  def __init__(self, port):
-    self.sio = serial.Serial(port=port, baudrate=115200, timeout=2)
+  def __init__(self, port, baudrate=115200, timeout=2):
+    self.sio = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
     self.sio.open()
     self._is_alive = True
     self.receiver_thread = None

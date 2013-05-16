@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+# Copyright (c) 2012-2013 Sladeware LLC
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,11 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Author: Oleksandr Sviridenko
 
-__copyright__ = 'Copyright (c) 2012 Sladeware LLC'
-__author__ = 'Oleksander Sviridenko'
-
-import logging
 import os
 import os.path
 import operator
@@ -34,6 +34,7 @@ from bb.tools.loaders.propler.chips import *
 from bb.tools.loaders.propler.bitwise_op import *
 from bb.tools.loaders.propler.boards import *
 from bb.utils.spawn import spawn
+from bb.utils import logging
 
 DEFAULT_SERIAL_PORTS = {
   "posix": "/dev/ttyUSB0",
@@ -48,6 +49,8 @@ DEFAULT_SERIAL_PORTS = {
   nt       **COM1**
   ======== ================
 """
+
+logger = logging.get_logger("bb")
 
 class UploaderException(Exception):
   pass
@@ -145,30 +148,31 @@ class SPIUploaderInterface(object):
     if not self.serial.isOpen():
       self.serial.open()
     self.reset()
-    print "Send the calibration pulse"
+    logger.debug("Send the calibration pulse")
     self.__calibrate()
     seq = []
     for (i, value) in zip(range(self.LFSR_REQUEST_LEN + self.LFSR_REPLY_LEN),
                           lfsr(self.LFSR_SEED)):
       seq.append(value)
-    print "Send the magic propeller LFSR byte stream"
+    logger.debug("Send the magic propeller LFSR byte stream")
     self.serial.write("".join(chr(each | 0xFE) for each in seq[0:self.LFSR_REQUEST_LEN]))
-    # send gobs of 0xF9 for id sync-up - these clock out the LSFR bits and the id
+    # Send gobs of 0xF9 for id sync-up - these clock out the LSFR bits and the
+    # id
     self.serial.write(chr(0xF9) * (self.LFSR_REPLY_LEN + 8))
-    # wait for response so we know we have a Propeller.
-    # count passed bits to provide more useful information for dubuging
+    # Wait for response so we know we have a Propeller. Count passed bits to
+    # provide more useful information for dubuging
     n = self.LFSR_REPLY_LEN
     ok = 0
     for i in range(self.LFSR_REQUEST_LEN, self.LFSR_REQUEST_LEN + n):
       bit = self.receive_bit(False, 0.100) # 0.110?
       if bit != seq[i]:
-        #print "%d/%d: %d <> %d" % (ok, n, bit, seq[i])
         raise Exception("No hardware found")
       ok += 1
     version = 0
     for i in range(8):
       version = ((version >> 1) & 0x7F) | ((self.receive_bit(False, 0.050) << 7))
-    print "Connecting to propeller v%d on '%s'" % (version, self.__serial.port)
+    logger.info("Connecting to device v%d on '%s' with baudrate=%d" \
+                  % (version, self.__serial.port, self.__serial.baudrate))
     # Update chip version for board config
     if self.get_config():
       self.get_config().set_chip_version(version)

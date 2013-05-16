@@ -57,6 +57,7 @@ class Thread(object):
   port = None
 
   def __init__(self, name=None, runner=None, port=None, messages=[]):
+    self._uid = None
     self._name = None
     self._name_format = None
     self._runner = None
@@ -71,6 +72,14 @@ class Thread(object):
     if hasattr(self.__class__, "name_format"):
       self._name_format = getattr(self.__class__, "name_format")
 
+  def _set_uid(self, uid):
+    if not isinstance(uid, int):
+      raise TypeError()
+    self._uid = uid
+
+  def get_uid(self):
+    return self._uid
+
   def register_message(self, message):
     """Registers message so that OS will know that this thread will send/receive
     the message.
@@ -80,7 +89,8 @@ class Thread(object):
     :raises: TypeError
     """
     if not isinstance(message, Message):
-      raise TypeError('message has to be derived from class Message.')
+      raise TypeError('message has to be derived from class Message: %s' \
+                        % type(message))
     if message.get_label() in self._messages:
       return False
     self._messages[message.get_label()] = message
@@ -150,6 +160,8 @@ class Thread(object):
     if self.has_port():
       self.remove_port()
     self._port = port
+    if not port.get_name():
+      port.set_name(port.name_format % self.get_name())
     return self
 
   def remove_port(self):

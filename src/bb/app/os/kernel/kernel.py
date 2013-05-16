@@ -23,6 +23,8 @@ scheduler algorithm.
 
 from __future__ import print_function
 
+import json
+
 from bb.utils import typecheck
 from bb.app.os.port import Port
 from bb.app.os.thread import Thread
@@ -40,7 +42,6 @@ class Kernel(object):
 
   def __init__(self, core=None, threads=[], scheduler=None):
     self._core = None
-    self._ports = dict()
     self._threads = dict()
     # Select scheduler first if defined before any thread will be added
     # By default, if scheduler was not defined will be used static
@@ -61,6 +62,18 @@ class Kernel(object):
 
   def __build__(self):
     return self.get_threads()
+
+  def serialize(self):
+    return json.dumps({
+        'threads': [
+          {
+            'name': t.get_name(),
+            'uid': t.get_uid(),
+            'runner': t.get_runner(),
+            'port': t.get_port() and t.get_port().get_name() or None
+          }
+          for t in self.get_threads()],
+    })
 
   def set_core(self, core):
     """Selects the core on which this kernel will be executed.
@@ -122,23 +135,3 @@ class Kernel(object):
       raise TypeError("Must be list")
     for thread in threads:
       self.register_thread(thread)
-
-  def register_ports(self, ports):
-    if not typecheck.is_sequence(ports):
-      raise TypeError("ports must be a sequence.")
-    for port in ports:
-      self.register_port(port)
-
-  def register_port(self, port):
-    if not isinstance(port, Port):
-      raise TypeError()
-    if port.get_name() in self._ports:
-      raise Exception("Port '%s' was already registered." % port.get_name())
-    self._ports[port.get_name()] = port
-    return self
-
-  def get_ports(self):
-    return self._ports.values()
-
-  def get_num_ports(self):
-    return len(self.get_ports())

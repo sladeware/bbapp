@@ -65,7 +65,7 @@ respectively. Line 10 shows how to read a mask of pressed buttons.
 
 """
 
-from bb.app.os import Driver, Message
+from bb.app.os import Driver
 
 class ButtonDriver(Driver):
   """This class represents button driver."""
@@ -73,6 +73,10 @@ class ButtonDriver(Driver):
   name_format = "BUTTON_DRIVER_%d"
   runner = "button_driver_runner"
   message_handlers = [
-    ('is_button_pressed', ('IS_BUTTON_PRESSED', [('pin', 1)])),
-    ('are_buttons_pressed', ('ARE_BUTTONS_PRESSED', [('mask', 4)])),
+    ('is_button_pressed',
+     ('IS_BUTTON_PRESSED', [('pin', 1)]),
+     ('PRESSED_BUTTON', [('pin', 1)])),
+    ('are_buttons_pressed',
+     ('ARE_BUTTONS_PRESSED', [('mask', 4)]),
+     ('PRESSED_BUTTONS', [('mask', 4)])),
   ]

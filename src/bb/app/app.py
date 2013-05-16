@@ -79,8 +79,7 @@ class Application(object):
 
   @classmethod
   def get_active_instance(cls):
-    """Returns active application instance. See also
-    :func:`identify_instance`.
+    """Returns active application instance. See also :func:`identify_instance`.
 
     :returns: An :class:`Application` instance.
     """
@@ -91,7 +90,8 @@ class Application(object):
     """Identifies last active application instance.
 
     :param obj: Returns instance that keeps this object if such was provided.
-    :returns: An :class:`Application` instance that represents active application.
+    :returns: An :class:`Application` instance that represents active
+      application.
     """
     src = obj and inspect.getsourcefile(obj) or None
     home_dir = src and cls.find_home_dir(src) or cls.identify_home_dir()

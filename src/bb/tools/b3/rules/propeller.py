@@ -48,10 +48,11 @@ class PropellerLoad(Rule):
     self.resolve()
     if not self._binary or not path_utils.exists(self._binary):
       raise IOError()
-    uploader = propler.SPIUploader(port=self.get_port())
+    uploader = propler.SPIUploader(port=self.get_port(),
+                                   baudrate=self._baudrate)
     if not uploader.connect():
       return
     uploader.upload_file(self._binary, eeprom=self._eeprom)
     if self._terminal_mode:
-      propler.terminal_mode()
+      propler.terminal_mode(port=self.get_port(), baudrate=self._baudrate)
     uploader.disconnect()

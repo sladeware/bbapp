@@ -15,3 +15,4 @@ depend on BB application.
 
    b3
    commands/index
+   rules/index

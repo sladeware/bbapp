@@ -22,25 +22,21 @@
 messages to other threads. To communicate with other threads it uses BBOS native
 ITC mechanism.
 
-The following example shows the most simple case how to define a new message
-handler by using :func:`Messenger.add_message_handler`::
+The following example shows how to create simple messenger
+:class:`MyMessenger`::
 
-  serial_open_msg = Message('SERIAL_OPEN', [('rx', 2), ('tx', 2)])
-  serial_messenger = Messenger('SERIAL_MSNGR')
-  serial_messenger.add_message_handler(MessageHandler('serial_open_handler', serial_open_msg))
-
-Or the same example, but as a class::
-
-  class SerialMessenger(Messenger):
+  class MyMessenger(Messenger):
     message_handlers = [
-      ('serial_open_handler', ('SERIAL_OPEN', [('rx', 2), ('tx', 2)]))
+      ('open',  ('MY_MSNGR_OPEN', [('pin', 2)]),
+                ('MY_MSNGR_OPEN_STATUS', [('pin', 2), ('status', 1)]))
+      ('close', ('MY_MSNGR_CLOSE', [('pin', 2)])
+                ('MY_MSNGR_CLOSE_STATUS', [('pin', 2), ('status', 1)]))
     ]
 
-  serial_messenger = SerialMessenger()
+  my_msngr = MyMessenger()
 
-When a :class:`SerialMessenger` object receives a ``SERIAL_OPEN`` message, the
-message is directed to ``serial_open_handler`` handler for the actual
-processing.
+When a :class:`MyMessenger` object receives a ``MY_MSNGR_OPEN`` message, the
+message is directed to ``open`` handler for the actual processing.
 """
 
 from bb.utils import logging
@@ -51,26 +47,27 @@ from bb.app.os.message import Message
 logger = logging.get_logger("bb")
 
 class MessageHandler(object):
-  """This class represents :class:`~bb.app.os.message.Message`
-  handler. This handler provides a description to BBOS of how to handle specific
-  message.
+  """This class represents handler that provides a description to BBOS of how to
+  handle specific message, i.e. it tells to messenger how to handle received
+  message or *target message* and to send *response message* if required.
 
   :param name: A string that represents handler's name.
-  :param message: A :class:`Message` instance.
-  :param require_input: Whether or not handler requires input.
-  :param require_output: Whether or not handler requires output.
+  :param target_message: A :class:`~bb.app.os.message.Message` instance that
+    messenger is going to receive.
+  :param response_message: A :class:`~bb.app.os.message.Message` instance that
+    messenger has to send back as response to `target_message`.
   """
 
-  def __init__(self, name, message, require_input=True, require_output=True):
+  def __init__(self, name, target_message, response_message=None):
     self._name = None
     self._set_name(name)
-    self._message = message
-    self._require_input = require_input
-    self._require_output = require_output
+    self._target_message = target_message
+    self._response_message = response_message
 
   def __str__(self):
-    return "%s[name='%s', message=%s]" % (self.__class__.__name__, self._name,
-                                        self._message)
+    return "%s[name='%s', target_message=%s]" \
+        % (self.__class__.__name__, self._name,
+           self._target_message)
 
   def _set_name(self, name):
     if not typecheck.is_string(name):
@@ -81,26 +78,19 @@ class MessageHandler(object):
     """Returns a string that represents handler's name."""
     return self._name
 
-  def get_message(self):
-    """Returns handled message.
+  def get_target_message(self):
+    """Returns target message.
 
     :returns: A :class:`Message` instance.
     """
-    return self._message
+    return self._target_message
 
-  def is_input_required(self):
-    """Returns whether or not input is required.
+  def get_response_message(self):
+    """Returns response message.
 
-    :returns: ``True`` or ``False``.
+    :returns: A :class:`Message` instance.
     """
-    return self._require_input
-
-  def is_output_required(self):
-    """Returns whether or not output is required.
-
-    :returns: ``True`` or ``False``.
-    """
-    return self._require_output
+    return self._response_message
 
 class Messenger(Thread):
   """This class is a special form of thread, which allows to automatically
@@ -156,17 +146,23 @@ class Messenger(Thread):
       raise TypeError("action has to be a function: %s" % action)
     self._idle_action = action
 
-  def get_message_handler(self, message):
-    if not isinstance(message, Message):
-      raise TypeError('message has to be derived from Message')
-    return self._message_handlers.get(message, None)
-
   def get_message_handlers(self):
     """Returns all registered message handlers.
 
     :returns: A list of :class:`MessageHandler` instances.
     """
-    return self._message_handlers
+    return self._message_handlers.values()
+
+  def get_messages(self):
+    """Returns a list of unique messages supported by this messenger.
+
+    :returns: A list of :class:`Message` instances.
+    """
+    messages = []
+    for handler in self.get_message_handlers():
+      messages.extend([handler.get_target_message(),
+                       handler.get_response_message()])
+    return messages
 
   def add_message_handler(self, handler):
     """Maps a command extracted from a message to the specified handler
@@ -176,14 +172,15 @@ class Messenger(Thread):
     """
     if not isinstance(handler, MessageHandler):
       raise TypeError('message handler has to be derived from MessageHandler')
-    message = handler.get_message()
-    if not self.register_message(message):
-      return self
-    if not handler.get_name().endswith('_handler'):
-      logger.warning("Message handler %s that handles message %s "
-                     "doesn't end with '_handler'"
-                     % (handler.get_name(), message))
-    self._message_handlers[message] = handler
+    for message in (handler.get_target_message(), handler.get_response_message()):
+      if message and not self.register_message(message):
+        return self
+    # TODO: do we need this warning?
+    #if not handler.get_name().endswith('_handler'):
+    #  logger.warning("Message handler %s that handles message %s "
+    #                 "doesn't end with '_handler'"
+    #                 % (handler.get_name(), message))
+    self._message_handlers[handler.get_target_message()] = handler
     return self
 
   def add_message_handlers(self, message_handlers):
@@ -201,12 +198,16 @@ class Messenger(Thread):
           raise TypeError("handler must be a tuple: %s" % type(handler))
         if len(handler) < 2:
           raise Exception("Handler should have more than two parameters")
+        handler = list(handler)
         if typecheck.is_tuple(handler[1]):
-          message = Message(*handler[1])
+          handler[1] = Message(*handler[1])
         else:
           raise TypeError()
-        handler = list(handler)
-        handler[1] = message
+        if len(handler) > 2:
+          if typecheck.is_tuple(handler[2]):
+            handler[2] = Message(*handler[2])
+          else:
+            raise TypeError()
         handler = MessageHandler(*handler)
       self.add_message_handler(handler)
     return self

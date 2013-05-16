@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+# Copyright (c) 2013 Sladeware LLC
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,6 +15,8 @@
 # limitations under the License.
 #
 # Author: Oleksandr Sviridenko
+
+import json
 
 from bb.app.hardware import primitives
 from bb.app.hardware.devices import Device
@@ -59,6 +63,12 @@ class Processor(Device):
     self._cores = [None] * num_cores
     if cores:
       self.set_cores(cores)
+
+  def serialize(self):
+    """Serialize processor object data."""
+    return json.dumps({
+      'family': self.properties.family
+    })
 
   def get_os(self):
     return self._os
