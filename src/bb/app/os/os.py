@@ -23,36 +23,44 @@ microprocessors.
 
 from __future__ import print_function
 
+import json
+
 from bb.app.os.kernel import Kernel
 from bb.app.os.drivers import Driver
 from bb.app.os.thread import Thread
 from bb.app.os.port import Port
 from bb.app.hardware.devices.processors import Processor
+from bb.utils import typecheck
 
 class OS(object):
   """This class is container/environment for :class:`Kernel`'s.
 
   :param processor: A :class:`Processor` instance on which OS runs.
+  :param max_message_size: An integer that represents max message size in bytes
+    available messaging. Note, this value will be generated automatically.
   """
 
   kernel_class = Kernel
 
-  def __init__(self, processor=None, max_message_size=0):
+  def __init__(self, processor=None, max_message_size=0, ports=[]):
     if not processor and not getattr(self.__class__, "kernel_class", None):
       raise Exception()
     self._processor = None
     self._set_processor(processor or getattr(self.__class__, "kernel_class"))
     self._kernels = []
+    self._ports = {}
     self._messages = {}
     self._max_message_size = 0
     for core in processor.get_cores():
-      # Skip the core if we do not have a threads for it
       kernel = core.get_kernel()
       if not kernel:
         continue
       self._kernels.append(kernel)
-    self._extract_messages()
-    self._set_max_message_size(max_message_size)
+    if max_message_size:
+      self.set_max_message_size(max_message_size)
+    if ports:
+      self.add_ports(ports)
+    self.update()
 
   def __str__(self):
     return '%s[processor=%s, num_kernels=%d]' % \
@@ -61,7 +69,7 @@ class OS(object):
          self.get_num_kernels())
 
   def __build__(self):
-    """Helps b3 to build MetaOS object. Returns required dependencies."""
+    """Helps b3 to build this OS instance. Returns required dependencies."""
     return [self.get_processor()] + self.get_kernels()
 
   def _set_processor(self, processor):
@@ -69,26 +77,42 @@ class OS(object):
       raise Exception('processor must be derived from Processor class.')
     self._processor = processor
 
-  def dump(self):
-    """Prints meta os state."""
-    print("Meta OS")
-    print("processor: %s" % self.get_processor())
-    print("%d thread(s)%s"
-          % (self.get_num_threads(), self.get_num_threads and ":" or ""))
-    for i, thread in enumerate(self.get_threads()):
-      print("  %d. %s" % (i, str(thread)))
-    print("%d message(s)%s"
-          % (self.get_num_messages(), self.get_num_messages() and ":" or ""))
-    for i, message in enumerate(self.get_messages()):
-      print("  %d. %s" % (i ,str(message)))
-    print("max message size: %s byte(s)" % self.get_max_message_size())
-
-  def _extract_messages(self):
+  def update(self):
+    """Does lazy update: extracts messages, updates max message size, generates
+    thread and port ids. This method is called when the mapping has been
+    updated.
+    """
     self._messages = {}
-    for thread in self.get_threads():
+    for uid, thread in enumerate(self.get_threads()):
+      thread._set_uid(uid)
+      if thread.has_port():
+        thread.get_port()._set_uid(uid)
       messages = thread.get_supported_messages()
       for message in messages:
         self._messages[message.get_label()] = message
+    for uid, port in enumerate(self.get_extra_ports()):
+      port._set_uid(uid + len(self.get_standard_ports()))
+    if not self.get_max_message_size():
+      self._max_message_size = self.get_min_message_size()
+
+  def get_standard_ports(self):
+    """Returns a list of standard ports."""
+    return [thread.get_port() for thread in self.get_threads() if thread.has_port()]
+
+  def get_extra_ports(self):
+    """Returns a list of extra ports."""
+    return set(self.get_ports()) - set(self.get_standard_ports())
+
+  def serialize(self):
+    """Serialize this OS instance in JSON format."""
+    return json.dumps({
+        'processor': json.loads(self.get_processor().serialize()),
+        'max_message_size': self.get_max_message_size(),
+        'messages': [json.loads(msg.serialize()) for msg in self.get_messages()],
+        'kernels': [json.loads(k.serialize()) for k in self.get_kernels()],
+        'ports': [{'name': p.get_name(), 'uid': p.get_uid(), 'capacity': p.get_capacity()}
+                  for p in self.get_ports()],
+      })
 
   @property
   def processor(self):
@@ -107,6 +131,7 @@ class OS(object):
     return self.get_kernels()
 
   def get_num_kernels(self):
+    """Returns number of kernels."""
     return len(self.get_kernels())
 
   def get_kernels(self):
@@ -144,17 +169,28 @@ class OS(object):
         drivers.append(thread)
     return drivers
 
-  def _set_max_message_size(self, max_size=0):
-    size = 0
-    # Compute min message size
-    for message in self.get_messages():
-      if message.get_byte_size() > size:
-        size = message.get_byte_size()
-    if max_size > size:
-      size = max_size
-    self._max_message_size = size
+  def get_min_message_size(self):
+    """Computes min required message size.
+
+    :returns: A size of message in bytes.
+    """
+    sz = 0
+    for msg in self.get_messages():
+      if msg.get_byte_size() > sz:
+        sz = msg.get_byte_size()
+    return sz
+
+  def set_max_message_size(self, size=0):
+    """Manually set max message size. It cannot be less than min message size,
+    see :func:`get_min_message_size`.
+
+    :param size: A message size in bytes.
+    """
+    if size > self.get_min_message_size():
+      self._max_message_size = size
 
   def get_max_message_size(self):
+    """Returns max message size."""
     return self._max_message_size
 
   def get_messages(self):
@@ -169,3 +205,30 @@ class OS(object):
     meta-operating system.
     """
     return len(self.get_messages())
+
+  def add_ports(self, ports):
+    """Adds ports to the system.
+
+    :param ports: A list of Port instances.
+    """
+    if not typecheck.is_sequence(ports):
+      raise TypeError("ports must be a sequence.")
+    for port in ports:
+      self.add_port(port)
+
+  def add_port(self, port):
+    """Adds port to the system."""
+    if not isinstance(port, Port):
+      raise TypeError()
+    if port.get_name() in self._ports:
+      raise Exception("Port '%s' was already registered." % port.get_name())
+    self._ports[port.get_name()] = port
+    return self
+
+  def get_ports(self):
+    """Returns a list of ports."""
+    return self._ports.values()
+
+  def get_num_ports(self):
+    """Returns number of available ports."""
+    return len(self.get_ports())

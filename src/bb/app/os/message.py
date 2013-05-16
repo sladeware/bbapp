@@ -32,6 +32,8 @@ will be available within an OS can be obtained with help of
 :func:`Mapping.get_messages`.
 """
 
+import json
+
 from bb.utils import typecheck
 
 class Field(object):
@@ -84,6 +86,13 @@ class Message(object):
     return '%s[label=%s, byte_size=%d, fields=(%s)]' % \
         (self.__class__.__name__, self.get_label(), self.get_byte_size(),
          ','.join([_.name for _ in self._fields]))
+
+  def serialize(self):
+    return json.dumps({
+      'label': self.get_label(),
+      'byte_size': self.get_byte_size(),
+      'fields': [(field.name, field.size) for field in self.get_fields()]
+    })
 
   def get_byte_size(self):
     """Returns total message size in bytes.

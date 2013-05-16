@@ -297,7 +297,8 @@ class Mapping(object):
       kernel = kernel_class(core=core, threads=threads)
       core.set_kernel(kernel)
     os = self._os_class(processor=processor,
-                        max_message_size=self.get_max_message_size())
+                        max_message_size=self.get_max_message_size(),
+                        ports=self.get_ports())
     # A few simple verifications
     if not os.get_num_kernels():
       raise Exception("OS should have atleast one kernel.")

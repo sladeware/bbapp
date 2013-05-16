@@ -19,6 +19,7 @@
 etc. and other hardware primitives such as notes.
 """
 
+from bb.app.object import Object
 from bb.utils import typecheck
 
 __all__ = ["Primitive", "ElectronicPrimitive", "Pin", "Wire", "Bus", "Note"]
@@ -31,7 +32,7 @@ class Properties(dict):
   def __setattr__(self, attr, value):
     self[attr] = value
 
-class Primitive(object):
+class Primitive(Object):
   """This class is basic for any primitive.
 
   Each primitive has unique ID -- designator for identification that can be
@@ -65,6 +66,7 @@ class Primitive(object):
   """
 
   def __init__(self, designator=None, designator_format=None):
+    Object.__init__(self)
     self._properties = Properties()
     self._id = id(self)
     self._designator_format = None
